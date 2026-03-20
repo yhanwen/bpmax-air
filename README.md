@@ -124,7 +124,7 @@ This is an early but working open-source MVP. The runtime, CLI, HTTP API, bluepr
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yhanwen/bpmax-air&type=Date)](https://www.star-history.com/#yhanwen/bpmax-air&Date)
+[![Star History Chart](https://api.star-history.com/image?repos=yhanwen/bpmax-air&type=Date)](https://www.star-history.com/#yhanwen/bpmax-air&Date)
 
 ## License
 
