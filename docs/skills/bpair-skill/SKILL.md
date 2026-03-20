@@ -27,6 +27,40 @@ Use this skill whenever the user asks to:
 - explain why a workflow is blocked
 - list audit history or recent task activity
 
+## Query semantics
+
+When the user asks questions like:
+
+- `有什么流程`
+- `当前有哪些流程模板`
+- `列出流程`
+- `有哪些表单`
+
+return only actual engine data:
+
+- stored flow templates
+- stored form templates
+- project instances
+- task records
+
+Do not answer with skill capabilities, action recipes, or usage flows such as:
+
+- `Create flow from prompt`
+- `Patch an existing flow`
+- `Submit task action`
+
+For process-list questions, prefer:
+
+```bash
+bpair flow list --json
+```
+
+For form-list questions, prefer:
+
+```bash
+bpair form list --json
+```
+
 ## Working rules
 
 1. Prefer `bpair` CLI over direct SDK or HTTP calls unless the task explicitly asks for code integration.

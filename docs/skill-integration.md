@@ -65,6 +65,7 @@ Each skill action should return two layers:
 - If a requested change can be expressed as a patch, prefer `update` over recreate
 - After any state-changing task submission, fetch the updated project snapshot
 - Use `runtime explain` when the user asks why a project is blocked or stalled
+- When the user asks what workflows or forms exist, query and return stored templates only, not skill action names
 
 ## Recommended Invocation Contract
 
