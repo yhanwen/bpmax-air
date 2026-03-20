@@ -122,16 +122,6 @@ pnpm gen:blueprint --sample
 
 This is an early but working open-source MVP. The runtime, CLI, HTTP API, blueprint generation, and skill scaffolding are implemented. Postgres storage, more advanced permissions, and richer BPM compatibility are still future work.
 
-## Star History
-
-<a href="https://www.star-history.com/?repos=yhanwen%2Fbpmax-air&type=date&legend=top-left">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=yhanwen/bpmax-air&type=date&theme=dark&legend=top-left" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=yhanwen/bpmax-air&type=date&legend=top-left" />
-    <img alt="Star History Chart" src="https://api.star-history.com/image?repos=yhanwen/bpmax-air&type=date&legend=top-left" />
-  </picture>
-</a>
-
 ## License
 
 MIT. See [LICENSE](./LICENSE).
