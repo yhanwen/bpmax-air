@@ -36,7 +36,8 @@
     "dev:server": "tsx packages/server/src/index.ts",
     "gen:blueprint": "tsx tools/generate-blueprint.ts",
     "pack:cli": "pnpm --filter @bpair/cli pack:dry-run",
-    "package:skill": "tsx tools/package-skill.ts"
+    "package:skill": "tsx tools/package-skill.ts",
+    "stage:release-assets": "tsx tools/stage-release-assets.ts"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",

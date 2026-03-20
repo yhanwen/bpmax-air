@@ -8,6 +8,7 @@ Use the release zip from the GitHub Releases page and install it with `cc-switch
 
 - Releases: `https://github.com/yhanwen/bpmax-air/releases`
 - Skill asset name: `bpair-skill-v<version>.zip`
+- Offline CLI tarball: `bpair-cli-<version>.tgz`
 
 This path is the cleanest option when you are not developing inside the repository.
 

@@ -45,6 +45,9 @@ jobs:
       - name: Package skill zip
         run: pnpm package:skill
 
+      - name: Stage release assets
+        run: pnpm stage:release-assets
+
       - name: Resolve tag
         id: tag
         run: |

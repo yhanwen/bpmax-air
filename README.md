@@ -1,6 +1,8 @@
 # BPMax-Air
 
 [![CI](https://github.com/yhanwen/bpmax-air/actions/workflows/ci.yml/badge.svg)](https://github.com/yhanwen/bpmax-air/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/yhanwen/bpmax-air)](https://github.com/yhanwen/bpmax-air/releases/latest)
+[![npm](https://img.shields.io/npm/v/%40bpair%2Fcli)](https://www.npmjs.com/package/@bpair/cli)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white)](./package.json)
 [![pnpm](https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white)](./package.json)
@@ -65,6 +67,8 @@ To verify the standalone package locally from the repository, generate a tarball
 ```bash
 pnpm pack:cli
 ```
+
+Offline CLI tarball assets are also attached to each GitHub Release.
 
 Create forms, flow, and a project:
 
