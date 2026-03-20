@@ -130,6 +130,12 @@ Agent-oriented skill assets live under [docs/skills/bpair-skill](./docs/skills/b
 - repository mode via the local installer script
 - release mode via the packaged zip asset for `cc-switch` or manual import
 
+Fastest distribution path:
+
+1. Open the latest [GitHub Release](https://github.com/yhanwen/bpmax-air/releases/latest)
+2. Download `bpair-skill-v<version>.zip`
+3. Import that zip with `cc-switch` where supported, or unzip/import it into the target client's `skills` directory
+
 See:
 
 - [docs/skill-integration.md](./docs/skill-integration.md)

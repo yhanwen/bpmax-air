@@ -11,6 +11,11 @@ Use the release zip from the GitHub Releases page and install it with `cc-switch
 
 This path is the cleanest option when you are not developing inside the repository.
 
+Typical flow:
+
+1. download the latest `bpair-skill-v<version>.zip`
+2. import it with `cc-switch`, or unzip it into the target client's `skills` directory
+
 ## Supported clients
 
 - Codex
