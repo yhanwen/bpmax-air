@@ -1,9 +1,9 @@
 ---
-name: codex-bpair
+name: bpair-skill
 description: Use this skill whenever the user wants to create, update, inspect, validate, simulate, or operate BPMax-Air workflows, forms, projects, tasks, or audit trails. Also use it when the user describes BPM or form changes in natural language and the work should be translated into BPMax-Air JSON templates plus `bpair` CLI commands.
 ---
 
-# Codex BPMax-Air Skill
+# BPMax-Air Skill
 
 Use this skill to operate the BPMax-Air engine through its CLI in a way that is stable for both humans and agents.
 

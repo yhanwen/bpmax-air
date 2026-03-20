@@ -1,5 +1,12 @@
 # BPMax-Air
 
+[![CI](https://github.com/yhanwen/bpmax-air/actions/workflows/ci.yml/badge.svg)](https://github.com/yhanwen/bpmax-air/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white)](./package.json)
+[![pnpm](https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white)](./package.json)
+[![TypeScript](https://img.shields.io/badge/typescript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![GitHub stars](https://img.shields.io/github/stars/yhanwen/bpmax-air?style=social)](https://github.com/yhanwen/bpmax-air/stargazers)
+
 BPMax-Air is an AI-first headless BPM engine for teams that want workflow runtime, form templates, and automation-friendly transport layers without coupling the core model to a visual designer.
 
 It is designed around a small set of stable JSON contracts so the same workflow objects can be used by:
@@ -7,7 +14,7 @@ It is designed around a small set of stable JSON contracts so the same workflow 
 - CLI automation
 - HTTP integrations
 - SDK consumers
-- Codex-style skills and agent workflows
+- generic skills and agent workflows
 
 ## Highlights
 
@@ -17,7 +24,7 @@ It is designed around a small set of stable JSON contracts so the same workflow 
 - SQLite-first persistence with room for future Postgres support
 - Stable JSON CLI output for agents and scripts
 - HTTP API and TypeScript SDK on top of the same core engine
-- Codex skill assets and blueprint generator for semi-automated scaffolding
+- Generic skill assets and blueprint generator for semi-automated scaffolding
 
 ## Quick Start
 
@@ -88,16 +95,16 @@ bpair task submit --task t_123 --action approve --data ./submit.json --json
 bpair runtime explain --project p_123 --json
 ```
 
-See [docs/cli.md](/Users/yanghanwen/Development/Cicada/bpmax-air/docs/cli.md) for more.
+See [docs/cli.md](./docs/cli.md) for more.
 
 ## Skill Integration
 
-Codex-oriented skill assets live under [docs/skills/codex-bpair](/Users/yanghanwen/Development/Cicada/bpmax-air/docs/skills/codex-bpair). The skill is installed locally via symlink so edits in this repository update the live skill immediately.
+Agent-oriented skill assets live under [docs/skills/bpair-skill](./docs/skills/bpair-skill). The primary local skill is installed via symlink so edits in this repository update the live skill immediately.
 
 See:
 
-- [docs/skill-integration.md](/Users/yanghanwen/Development/Cicada/bpmax-air/docs/skill-integration.md)
-- [docs/skills/codex-bpair/SKILL.md](/Users/yanghanwen/Development/Cicada/bpmax-air/docs/skills/codex-bpair/SKILL.md)
+- [docs/skill-integration.md](./docs/skill-integration.md)
+- [docs/skills/bpair-skill/SKILL.md](./docs/skills/bpair-skill/SKILL.md)
 
 ## Development
 
@@ -115,6 +122,10 @@ pnpm gen:blueprint --sample
 
 This is an early but working open-source MVP. The runtime, CLI, HTTP API, blueprint generation, and skill scaffolding are implemented. Postgres storage, more advanced permissions, and richer BPM compatibility are still future work.
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=yhanwen/bpmax-air&type=Date)](https://www.star-history.com/#yhanwen/bpmax-air&Date)
+
 ## License
 
-MIT. See [LICENSE](/Users/yanghanwen/Development/Cicada/bpmax-air/LICENSE).
+MIT. See [LICENSE](./LICENSE).

@@ -1,4 +1,4 @@
-# Codex BPMax-Air Examples
+# BPMax-Air Skill Examples
 
 ## Example 1
 

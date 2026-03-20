@@ -1,6 +1,6 @@
 # Skill Integration
 
-Recommended orchestration pattern for Codex-like agents:
+Recommended orchestration pattern for agent skills:
 
 1. Generate or patch `flow.json` and `form.json`
 2. Call `bpair ... --json`

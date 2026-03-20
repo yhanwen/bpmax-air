@@ -9,7 +9,7 @@
 5. Publish flow.
 
 ```bash
-pnpm gen:blueprint --input ./docs/skills/codex-bpair/references/blueprint-template.yaml --out-dir ./tmp/generated
+pnpm gen:blueprint --input ./docs/skills/bpair-skill/references/blueprint-template.yaml --out-dir ./tmp/generated
 ```
 
 ```bash
