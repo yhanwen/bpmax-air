@@ -1,0 +1,25 @@
+{
+  "kind": "form-template",
+  "version": "v1",
+  "key": "project-intake-form",
+  "name": "项目立项表",
+  "schema": {
+    "fields": [
+      { "key": "projectName", "type": "text", "label": "项目名称", "required": true },
+      { "key": "owner", "type": "user", "label": "项目负责人", "required": true },
+      { "key": "budget", "type": "currency", "label": "预算", "required": false, "defaultValue": 0 }
+    ]
+  },
+  "layout": {
+    "groups": [
+      { "key": "base", "title": "基础信息", "fields": ["projectName", "owner", "budget"] }
+    ]
+  },
+  "behavior": {
+    "computed": [],
+    "draftable": true
+  },
+  "metadata": {
+    "domain": "project"
+  }
+}

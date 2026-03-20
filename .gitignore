@@ -1,0 +1,13 @@
+node_modules
+dist
+.turbo
+.DS_Store
+*.db
+*.db-shm
+*.db-wal
+coverage
+tmp
+.idea
+.vscode
+.env
+.env.*

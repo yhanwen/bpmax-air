@@ -1,0 +1,26 @@
+{
+  "kind": "form-template",
+  "version": "v1",
+  "key": "kickoff-form",
+  "name": "立项审批表",
+  "schema": {
+    "fields": [
+      { "key": "scopeConfirmed", "type": "boolean", "label": "范围已确认", "required": true },
+      { "key": "riskLevel", "type": "select", "label": "风险等级", "required": true, "options": [
+        { "label": "低", "value": "low" },
+        { "label": "中", "value": "medium" },
+        { "label": "高", "value": "high" }
+      ] }
+    ]
+  },
+  "layout": {
+    "groups": [
+      { "key": "review", "title": "审批", "fields": ["scopeConfirmed", "riskLevel"] }
+    ]
+  },
+  "behavior": {
+    "computed": [],
+    "draftable": true
+  },
+  "metadata": {}
+}

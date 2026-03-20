@@ -1,0 +1,30 @@
+{
+  "name": "@bpair/cli",
+  "version": "0.1.0",
+  "description": "CLI transport for BPMax-Air.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "bpair": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --shims"
+  },
+  "dependencies": {
+    "@bpair/core": "workspace:*",
+    "@bpair/storage-sqlite": "workspace:*",
+    "commander": "^14.0.1",
+    "yaml": "^2.8.1"
+  }
+}

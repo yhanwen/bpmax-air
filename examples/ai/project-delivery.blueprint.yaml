@@ -1,0 +1,67 @@
+flow:
+  key: project-delivery
+  name: 项目推进流程
+  createForm: project-intake-form
+  entry: kickoff
+  slaHours: 72
+forms:
+  - key: project-intake-form
+    name: 项目立项表
+    groupTitle: 基础信息
+    fields:
+      - key: projectName
+        label: 项目名称
+        type: text
+        required: true
+      - key: owner
+        label: 项目负责人
+        type: user
+        required: true
+      - key: budget
+        label: 预算
+        type: currency
+  - key: kickoff-form
+    name: 立项审批表
+    groupTitle: 审批
+    fields:
+      - key: scopeConfirmed
+        label: 范围已确认
+        type: boolean
+        required: true
+      - key: riskLevel
+        label: 风险等级
+        type: select
+        required: true
+        options:
+          - label: 低
+            value: low
+          - label: 中
+            value: medium
+          - label: 高
+            value: high
+steps:
+  - id: kickoff
+    name: 项目立项
+    type: step
+    form: kickoff-form
+    assignee: role:pm
+    actions: [approve, reject]
+  - id: delivery
+    name: 实施交付
+    type: step
+    assignee: field:owner
+    actions: [complete, terminate]
+  - id: done
+    name: 完成
+    type: end
+    actions: [complete]
+transitions:
+  - from: kickoff
+    action: approve
+    to: delivery
+  - from: kickoff
+    action: reject
+    to: kickoff
+  - from: delivery
+    action: complete
+    to: done

@@ -1,0 +1,23 @@
+{
+  "skill_name": "codex-bpair",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "用 BPMax-Air 创建一个项目推进流程，包含立项、开发、验收三个环节；立项和验收都有表单；最后给我可执行命令。",
+      "expected_output": "生成至少一个 flow JSON、相关 form JSON，以及对应的 bpair form create、bpair flow create、bpair flow publish 命令。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "把现有 project-delivery 流程在 delivery 前插入 legal-review 环节，复用 owner 字段作为处理人，使用 patch 方式，不要整体重写。",
+      "expected_output": "先读取现有 flow，再生成最小 patch，并调用 bpair flow update。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "项目 p_123 为什么卡住了？请读取运行时和审计信息，告诉我当前阻塞点和下一步动作。",
+      "expected_output": "调用 bpair runtime explain 和 bpair audit tail，并产出简洁阻塞说明。",
+      "files": []
+    }
+  ]
+}

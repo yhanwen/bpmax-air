@@ -1,0 +1,42 @@
+{
+  "kind": "flow-template",
+  "version": "v1",
+  "key": "project-delivery",
+  "name": "项目推进流程",
+  "createForm": "project-intake-form",
+  "entry": "kickoff",
+  "steps": [
+    {
+      "id": "kickoff",
+      "type": "step",
+      "name": "项目立项",
+      "taskForm": "kickoff-form",
+      "assigneeRule": { "type": "role", "value": "pm" },
+      "actions": ["approve", "reject"]
+    },
+    {
+      "id": "delivery",
+      "type": "step",
+      "name": "实施交付",
+      "assigneeRule": { "type": "field", "value": "owner" },
+      "actions": ["complete", "terminate"]
+    },
+    {
+      "id": "done",
+      "type": "end",
+      "name": "完成"
+    }
+  ],
+  "transitions": [
+    { "from": "kickoff", "action": "approve", "to": "delivery" },
+    { "from": "kickoff", "action": "reject", "to": "kickoff" },
+    { "from": "delivery", "action": "complete", "to": "done" }
+  ],
+  "policies": {
+    "slaHours": 72
+  },
+  "triggers": [],
+  "metadata": {
+    "domain": "delivery"
+  }
+}
