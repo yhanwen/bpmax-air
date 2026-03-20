@@ -31,23 +31,49 @@ It is designed around a small set of stable JSON contracts so the same workflow 
 Requirements:
 
 - Node.js 22+
-- pnpm 10+
+- pnpm 10+ for repository development
 
-Install and verify:
+Repository setup and verification:
 
 ```bash
 pnpm install
 pnpm check
 ```
 
+Published CLI quick start:
+
+```bash
+npx -y @bpair/cli --db ./demo.db flow list --json
+```
+
+Local development entrypoint:
+
+```bash
+pnpm dev:cli -- --db ./demo.db flow list --json
+```
+
+## NPX Distribution
+
+The CLI is published to npm for clone-free usage:
+
+```bash
+npx -y @bpair/cli --db ./demo.db flow list --json
+```
+
+To verify the standalone package locally from the repository, generate a tarball:
+
+```bash
+pnpm pack:cli
+```
+
 Create forms, flow, and a project:
 
 ```bash
-pnpm dev:cli -- --db ./demo.db form create --input ./examples/forms/project-intake.json --json
-pnpm dev:cli -- --db ./demo.db form create --input ./examples/forms/kickoff.json --json
-pnpm dev:cli -- --db ./demo.db flow create --input ./examples/flows/project-delivery.json --json
-pnpm dev:cli -- --db ./demo.db flow publish --key project-delivery --json
-pnpm dev:cli -- --db ./demo.db project create --flow project-delivery --name "A客户交付" --data ./examples/submissions/project-intake.json --json
+npx -y @bpair/cli --db ./demo.db form create --input ./examples/forms/project-intake.json --json
+npx -y @bpair/cli --db ./demo.db form create --input ./examples/forms/kickoff.json --json
+npx -y @bpair/cli --db ./demo.db flow create --input ./examples/flows/project-delivery.json --json
+npx -y @bpair/cli --db ./demo.db flow publish --key project-delivery --json
+npx -y @bpair/cli --db ./demo.db project create --flow project-delivery --name "A客户交付" --data ./examples/submissions/project-intake.json --json
 ```
 
 Run the HTTP server:
@@ -88,11 +114,11 @@ pnpm gen:blueprint --input ./examples/ai/project-delivery.blueprint.yaml --out-d
 ## CLI Example
 
 ```bash
-bpair form create --input ./form.json --json
-bpair flow create --input ./flow.json --json
-bpair project create --flow project-delivery --name "Project A" --data ./create.json --json
-bpair task submit --task t_123 --action approve --data ./submit.json --json
-bpair runtime explain --project p_123 --json
+npx -y @bpair/cli form create --input ./form.json --json
+npx -y @bpair/cli flow create --input ./flow.json --json
+npx -y @bpair/cli project create --flow project-delivery --name "Project A" --data ./create.json --json
+npx -y @bpair/cli task submit --task t_123 --action approve --data ./submit.json --json
+npx -y @bpair/cli runtime explain --project p_123 --json
 ```
 
 See [docs/cli.md](./docs/cli.md) for more.
@@ -105,6 +131,12 @@ See:
 
 - [docs/skill-integration.md](./docs/skill-integration.md)
 - [docs/skills/bpair-skill/SKILL.md](./docs/skills/bpair-skill/SKILL.md)
+
+Install the local skill symlink:
+
+```bash
+./docs/skills/bpair-skill/scripts/install.sh
+```
 
 ## Development
 

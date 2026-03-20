@@ -7,6 +7,22 @@ description: Use this skill whenever the user wants to create, update, inspect, 
 
 Use this skill to operate the BPMax-Air engine through its CLI in a way that is stable for both humans and agents.
 
+## Command launcher
+
+Prefer the published CLI:
+
+```bash
+npx -y @bpair/cli ...
+```
+
+If the repository is already cloned locally and the caller intends to use the workspace version, fall back to:
+
+```bash
+pnpm dev:cli -- ...
+```
+
+Treat both launchers as the same command surface. The subcommands and JSON contracts must stay identical.
+
 ## What this skill does
 
 - Turn natural-language BPM requests into BPMax-Air JSON artifacts
@@ -52,30 +68,31 @@ Do not answer with skill capabilities, action recipes, or usage flows such as:
 For process-list questions, prefer:
 
 ```bash
-bpair flow list --json
+npx -y @bpair/cli flow list --json
 ```
 
 For form-list questions, prefer:
 
 ```bash
-bpair form list --json
+npx -y @bpair/cli form list --json
 ```
 
 ## Working rules
 
-1. Prefer `bpair` CLI over direct SDK or HTTP calls unless the task explicitly asks for code integration.
+1. Prefer the published CLI via `npx -y @bpair/cli` over direct SDK or HTTP calls unless the task explicitly asks for code integration.
 2. Always pass `--json`.
 3. For large inputs, write JSON files and pass them with `--input`, `--patch`, or `--data`.
-4. For workflow generation tasks, prefer this two-stage path:
+4. If the user is already inside the repository and wants the local workspace version, use `pnpm dev:cli -- ...` instead of `npx`.
+5. For workflow generation tasks, prefer this two-stage path:
    - first write `blueprint.yaml`
    - then compile it with `pnpm gen:blueprint --input <blueprint> --out-dir <dir>`
-5. If the request is very free-form, first normalize it into the blueprint format before generating JSON.
-6. Read current state before patching:
+6. If the request is very free-form, first normalize it into the blueprint format before generating JSON.
+7. Read current state before patching:
    - use `bpair flow get`
    - use `bpair form get`
    - use `bpair project get`
    - use `bpair task get`
-7. After any write action, return both:
+8. After any write action, return both:
    - the raw JSON result
    - a short user-facing explanation
 
@@ -138,14 +155,14 @@ pnpm gen:blueprint --input /abs/path/blueprint.yaml --out-dir /abs/path/generate
 4. Run:
 
 ```bash
-bpair form create --input /abs/path/generated/forms/<form>.json --json
-bpair flow create --input /abs/path/generated/flows/<flow>.json --json
+npx -y @bpair/cli form create --input /abs/path/generated/forms/<form>.json --json
+npx -y @bpair/cli flow create --input /abs/path/generated/flows/<flow>.json --json
 ```
 
 5. If the user wants the flow usable immediately, also run:
 
 ```bash
-bpair flow publish --key <flow-key> --json
+npx -y @bpair/cli flow publish --key <flow-key> --json
 ```
 
 ### Patch an existing flow
@@ -155,7 +172,7 @@ bpair flow publish --key <flow-key> --json
 3. Run:
 
 ```bash
-bpair flow update --key <flow-key> --patch /abs/path/patch.json --json
+npx -y @bpair/cli flow update --key <flow-key> --patch /abs/path/patch.json --json
 ```
 
 ### Create form from fields
@@ -167,7 +184,7 @@ bpair flow update --key <flow-key> --patch /abs/path/patch.json --json
 5. Run:
 
 ```bash
-bpair form create --input /abs/path/form.json --json
+npx -y @bpair/cli form create --input /abs/path/form.json --json
 ```
 
 ### Create project
@@ -177,7 +194,7 @@ bpair form create --input /abs/path/form.json --json
 3. Run:
 
 ```bash
-bpair project create --flow <flow-key> --name "<project-name>" --data /abs/path/project.json --json
+npx -y @bpair/cli project create --flow <flow-key> --name "<project-name>" --data /abs/path/project.json --json
 ```
 
 ### Update task form draft
@@ -187,7 +204,7 @@ bpair project create --flow <flow-key> --name "<project-name>" --data /abs/path/
 3. Run:
 
 ```bash
-bpair task draft-save --task <task-id> --data /abs/path/draft.json --json
+npx -y @bpair/cli task draft-save --task <task-id> --data /abs/path/draft.json --json
 ```
 
 ### Submit task action
@@ -197,13 +214,13 @@ bpair task draft-save --task <task-id> --data /abs/path/draft.json --json
 3. Run:
 
 ```bash
-bpair task submit --task <task-id> --action <action> --data /abs/path/submit.json --json
+npx -y @bpair/cli task submit --task <task-id> --action <action> --data /abs/path/submit.json --json
 ```
 
 4. Immediately fetch the updated project state:
 
 ```bash
-bpair project get --id <project-id> --json
+npx -y @bpair/cli project get --id <project-id> --json
 ```
 
 ### Explain blockers
@@ -211,8 +228,8 @@ bpair project get --id <project-id> --json
 Run:
 
 ```bash
-bpair runtime explain --project <project-id> --json
-bpair audit tail --project <project-id> --json
+npx -y @bpair/cli runtime explain --project <project-id> --json
+npx -y @bpair/cli audit tail --project <project-id> --json
 ```
 
 Then explain:
@@ -230,7 +247,7 @@ Always produce:
 
 ```json
 {
-  "command": "bpair ... --json",
+  "command": "npx -y @bpair/cli ... --json",
   "input_files": ["/abs/path/file.json"],
   "result": {
     "ok": true,

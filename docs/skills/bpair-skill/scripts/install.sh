@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SKILL_SRC="/Users/yanghanwen/Development/Cicada/bpmax-air/docs/skills/bpair-skill"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_SRC="$(cd "$SCRIPT_DIR/.." && pwd)"
 CODEX_HOME_DIR="${CODEX_HOME:-$HOME/.codex}"
 TARGET="$CODEX_HOME_DIR/skills/bpair-skill"
 

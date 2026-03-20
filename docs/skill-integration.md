@@ -1,9 +1,31 @@
 # Skill Integration
 
+## Installation Modes
+
+### Repository mode
+
+Use this while developing locally or before the CLI package is published:
+
+```bash
+pnpm install
+pnpm dev:cli -- --db ./demo.db flow list --json
+./docs/skills/bpair-skill/scripts/install.sh
+```
+
+### Published CLI mode
+
+Use this after `@bpair/cli` is published to npm:
+
+```bash
+npx -y @bpair/cli --db ./demo.db flow list --json
+```
+
+The recommended default is published CLI mode. Repository mode is the fallback when working inside the monorepo.
+
 Recommended orchestration pattern for agent skills:
 
 1. Generate or patch `flow.json` and `form.json`
-2. Call `bpair ... --json`
+2. Call `npx -y @bpair/cli ... --json` or `pnpm dev:cli -- ... --json`
 3. Read structured output
 4. Summarize human-facing result separately
 
@@ -22,28 +44,28 @@ Recommended orchestration pattern for agent skills:
 
 - `create_flow_from_prompt`
   - Generate or update one flow JSON file
-  - Call `bpair flow create --input <flow.json> --json`
+  - Call `npx -y @bpair/cli flow create --input <flow.json> --json`
 - `patch_flow`
   - Generate one patch file
-  - Call `bpair flow update --key <flow-key> --patch <patch.json> --json`
+  - Call `npx -y @bpair/cli flow update --key <flow-key> --patch <patch.json> --json`
 - `create_form_from_fields`
   - Generate one form JSON file
-  - Call `bpair form create --input <form.json> --json`
+  - Call `npx -y @bpair/cli form create --input <form.json> --json`
 - `create_project`
   - Generate one submission JSON file
-  - Call `bpair project create --flow <flow-key> --name <project-name> --data <submission.json> --json`
+  - Call `npx -y @bpair/cli project create --flow <flow-key> --name <project-name> --data <submission.json> --json`
 - `update_task_form`
   - Generate one submission JSON file
-  - Call `bpair task draft-save --task <task-id> --data <submission.json> --json`
+  - Call `npx -y @bpair/cli task draft-save --task <task-id> --data <submission.json> --json`
 - `submit_task_action`
   - Generate one submission JSON file if needed
-  - Call `bpair task submit --task <task-id> --action <action> --data <submission.json> --json`
+  - Call `npx -y @bpair/cli task submit --task <task-id> --action <action> --data <submission.json> --json`
 - `get_project_snapshot`
-  - Call `bpair project get --id <project-id> --json`
-  - Optionally call `bpair task list --project <project-id> --json`
+  - Call `npx -y @bpair/cli project get --id <project-id> --json`
+  - Optionally call `npx -y @bpair/cli task list --project <project-id> --json`
 - `explain_project_blockers`
-  - Call `bpair runtime explain --project <project-id> --json`
-  - Optionally call `bpair audit tail --project <project-id> --json`
+  - Call `npx -y @bpair/cli runtime explain --project <project-id> --json`
+  - Optionally call `npx -y @bpair/cli audit tail --project <project-id> --json`
 
 ## Skill Response Pattern
 
@@ -60,6 +82,7 @@ Each skill action should return two layers:
 ## Safe Defaults For Agents
 
 - Always call CLI with `--json`
+- Prefer `npx -y @bpair/cli` as the default launcher outside the repository
 - Prefer file-based input over inline JSON flags
 - Read existing template or project state before patching
 - If a requested change can be expressed as a patch, prefer `update` over recreate
@@ -79,7 +102,7 @@ When another agent or skill wraps `bpair`, prefer this internal contract:
     "action": "approve",
     "dataFile": "/abs/path/submit.json"
   },
-  "command": "bpair task submit --task t_123 --action approve --data /abs/path/submit.json --json",
+  "command": "npx -y @bpair/cli task submit --task t_123 --action approve --data /abs/path/submit.json --json",
   "result": {
     "ok": true,
     "data": {},

@@ -4,6 +4,9 @@
   "description": "CLI transport for BPMax-Air.",
   "license": "MIT",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "bpair": "dist/index.js"
   },
@@ -19,12 +22,15 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --shims"
+    "build": "tsup --config tsup.config.ts && node ./scripts/fix-node-builtins.mjs",
+    "pack:dry-run": "pnpm pack --pack-destination ../../.artifacts"
   },
   "dependencies": {
-    "@bpair/core": "workspace:*",
-    "@bpair/storage-sqlite": "workspace:*",
     "commander": "^14.0.1",
     "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@bpair/core": "workspace:*",
+    "@bpair/storage-sqlite": "workspace:*"
   }
 }
