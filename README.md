@@ -125,17 +125,30 @@ See [docs/cli.md](./docs/cli.md) for more.
 
 ## Skill Integration
 
-Agent-oriented skill assets live under [docs/skills/bpair-skill](./docs/skills/bpair-skill). The primary local skill is installed via symlink so edits in this repository update the live skill immediately.
+Agent-oriented skill assets live under [docs/skills/bpair-skill](./docs/skills/bpair-skill). The skill can be distributed in two ways:
+
+- repository mode via the local installer script
+- release mode via the packaged zip asset for `cc-switch` or manual import
 
 See:
 
 - [docs/skill-integration.md](./docs/skill-integration.md)
+- [docs/skill-distribution.md](./docs/skill-distribution.md)
 - [docs/skills/bpair-skill/SKILL.md](./docs/skills/bpair-skill/SKILL.md)
 
-Install the local skill symlink:
+Package the release zip locally:
 
 ```bash
-./docs/skills/bpair-skill/scripts/install.sh
+pnpm package:skill
+```
+
+Install from the repository for different clients:
+
+```bash
+./docs/skills/bpair-skill/scripts/install.sh --platform codex
+./docs/skills/bpair-skill/scripts/install.sh --platform claude-code
+./docs/skills/bpair-skill/scripts/install.sh --platform openclaw
+./docs/skills/bpair-skill/scripts/install.sh --platform opencode
 ```
 
 ## Development

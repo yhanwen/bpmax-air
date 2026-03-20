@@ -35,11 +35,13 @@
     "dev:cli": "tsx packages/cli/src/index.ts",
     "dev:server": "tsx packages/server/src/index.ts",
     "gen:blueprint": "tsx tools/generate-blueprint.ts",
-    "pack:cli": "pnpm --filter @bpair/cli pack:dry-run"
+    "pack:cli": "pnpm --filter @bpair/cli pack:dry-run",
+    "package:skill": "tsx tools/package-skill.ts"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/node": "^24.0.15",
+    "fflate": "^0.8.2",
     "tsup": "^8.3.5",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",

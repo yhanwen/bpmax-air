@@ -2,6 +2,8 @@
 
 ## Installation Modes
 
+See [skill-distribution.md](./skill-distribution.md) for release zip packaging, `cc-switch` usage, and multi-client installation paths.
+
 ### Repository mode
 
 Use this while developing locally or before the CLI package is published:
