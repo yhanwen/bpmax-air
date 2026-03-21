@@ -1,0 +1,418 @@
+flow:
+  key: software-project-management
+  name: 软件项目管理流程
+  createForm: project-intake-form
+  entry: project_intake
+  slaHours: 168
+forms:
+  - key: project-intake-form
+    name: 软件项目立项表
+    groupTitle: 项目基础信息
+    fields:
+      - key: projectName
+        label: 项目名称
+        type: text
+        required: true
+      - key: pm
+        label: 项目经理
+        type: user
+        required: true
+      - key: productOwner
+        label: 产品负责人
+        type: user
+        required: true
+      - key: techLead
+        label: 技术负责人
+        type: user
+        required: true
+      - key: devLead
+        label: 开发负责人
+        type: user
+        required: true
+      - key: qaLead
+        label: 测试负责人
+        type: user
+        required: true
+      - key: acceptanceOwner
+        label: 验收人
+        type: user
+        required: true
+      - key: goalSummary
+        label: 项目目标
+        type: textarea
+        required: true
+      - key: projectBackground
+        label: 项目背景
+        type: textarea
+      - key: plannedStartDate
+        label: 计划开始日期
+        type: date
+        required: true
+      - key: plannedEndDate
+        label: 计划结束日期
+        type: date
+        required: true
+      - key: projectLevel
+        label: 项目级别
+        type: select
+        required: true
+        options:
+          - label: P1
+            value: p1
+          - label: P2
+            value: p2
+          - label: P3
+            value: p3
+      - key: developmentTasks
+        label: 开发任务清单
+        type: table
+        description: 每行至少包含 taskKey、title、description、priority、isCritical、designOwner、developerOwner、testerOwner、currentOwner、acceptanceCriteria
+  - key: requirement-baseline-form
+    name: 需求基线确认表
+    groupTitle: 需求基线
+    fields:
+      - key: scopeSummary
+        label: 范围说明
+        type: textarea
+        required: true
+      - key: keyRequirements
+        label: 关键需求清单
+        type: textarea
+        required: true
+      - key: outOfScope
+        label: 非范围说明
+        type: textarea
+      - key: deliverables
+        label: 交付物
+        type: textarea
+        required: true
+      - key: baselineConfirmed
+        label: 需求基线已确认
+        type: boolean
+        required: true
+  - key: solution-review-form
+    name: 技术方案评审表
+    groupTitle: 技术方案
+    fields:
+      - key: architectureSummary
+        label: 技术方案概述
+        type: textarea
+        required: true
+      - key: impactScope
+        label: 架构影响范围
+        type: textarea
+      - key: riskAndDependency
+        label: 风险与依赖
+        type: textarea
+        required: true
+      - key: resourcePlan
+        label: 资源评估
+        type: textarea
+      - key: designApproved
+        label: 方案评审通过
+        type: boolean
+        required: true
+  - key: release-readiness-form
+    name: 上线准备确认表
+    groupTitle: 上线准备
+    fields:
+      - key: testConclusion
+        label: 测试结论
+        type: textarea
+        required: true
+      - key: residualRisks
+        label: 剩余风险
+        type: textarea
+      - key: releaseWindow
+        label: 发布时间窗口
+        type: datetime
+        required: true
+      - key: rollbackPlan
+        label: 回滚方案
+        type: textarea
+        required: true
+      - key: checklistCompleted
+        label: 上线检查单已完成
+        type: boolean
+        required: true
+  - key: acceptance-form
+    name: 上线验收表
+    groupTitle: 上线验收
+    fields:
+      - key: releaseResult
+        label: 上线结果
+        type: textarea
+        required: true
+      - key: acceptanceConclusion
+        label: 验收结论
+        type: select
+        required: true
+        options:
+          - label: 通过
+            value: approved
+          - label: 驳回
+            value: rejected
+      - key: openIssues
+        label: 遗留问题
+        type: textarea
+      - key: acceptanceComment
+        label: 验收意见
+        type: textarea
+steps:
+  - id: project_intake
+    name: 项目立项
+    type: step
+    assignee: field:pm
+    actions: [approve, reject]
+  - id: requirement_review
+    name: 需求澄清
+    type: step
+    form: requirement-baseline-form
+    assignee: field:productOwner
+    actions: [approve, reject]
+    taskOrchestration:
+      createOnEnter:
+        - key: req-interview
+          title: 需求访谈
+          phase: requirement_review
+          priority: high
+          critical: true
+          assignee: field:productOwner
+          fields:
+            isCritical: true
+        - key: req-doc
+          title: 需求文档整理
+          phase: requirement_review
+          priority: medium
+          critical: false
+          assignee: field:productOwner
+          fields:
+            isCritical: false
+        - key: req-review
+          title: 需求评审
+          phase: requirement_review
+          milestoneKey: requirement_baseline
+          priority: high
+          critical: true
+          assignee: field:productOwner
+          fields:
+            isCritical: true
+  - id: solution_design
+    name: 方案设计
+    type: step
+    form: solution-review-form
+    assignee: field:techLead
+    actions: [approve, reject]
+    taskOrchestration:
+      createOnEnter:
+        - key: design-architecture
+          title: 总体方案设计
+          phase: solution_design
+          priority: high
+          critical: true
+          assignee: field:techLead
+          fields:
+            isCritical: true
+        - key: design-interface
+          title: 接口与数据设计
+          phase: solution_design
+          priority: medium
+          critical: false
+          assignee: field:techLead
+          fields:
+            isCritical: false
+        - key: design-review
+          title: 技术方案评审
+          phase: solution_design
+          milestoneKey: design_review_passed
+          priority: high
+          critical: true
+          assignee: field:techLead
+          fields:
+            isCritical: true
+  - id: development_execution
+    name: 开发执行
+    type: step
+    assignee: field:devLead
+    actions: [complete, reject]
+    taskOrchestration:
+      createOnEnter:
+        - key: dev-env-setup
+          title: 开发环境准备
+          phase: development_execution
+          priority: medium
+          critical: false
+          assignee: field:devLead
+          fields:
+            workType: setup
+            currentStage: develop
+            stageStatus: pending
+            isCritical: false
+      seedFromFields:
+        - field: developmentTasks
+          templateKeyField: taskKey
+          titleField: title
+          descriptionField: description
+          assigneeField: currentOwner
+          priorityField: priority
+          criticalField: isCritical
+          defaultFields:
+            workType: feature
+            currentStage: design
+            stageStatus: pending
+  - id: testing_validation
+    name: 测试验证
+    type: step
+    assignee: field:qaLead
+    actions: [approve, reject]
+    taskOrchestration:
+      createOnEnter:
+        - key: test-integration
+          title: 集成测试
+          phase: testing_validation
+          milestoneKey: test_passed
+          priority: high
+          critical: true
+          assignee: field:qaLead
+          fields:
+            isCritical: true
+        - key: test-bug-burn-down
+          title: 缺陷收敛
+          phase: testing_validation
+          priority: high
+          critical: true
+          assignee: field:qaLead
+          fields:
+            isCritical: true
+        - key: test-regression
+          title: 回归测试
+          phase: testing_validation
+          priority: medium
+          critical: false
+          assignee: field:qaLead
+          fields:
+            isCritical: false
+  - id: release_preparation
+    name: 上线准备
+    type: step
+    form: release-readiness-form
+    assignee: field:pm
+    actions: [approve, reject]
+    taskOrchestration:
+      createOnEnter:
+        - key: release-checklist
+          title: 上线检查单确认
+          phase: release_preparation
+          milestoneKey: release_checklist_completed
+          priority: high
+          critical: true
+          assignee: field:pm
+          fields:
+            isCritical: true
+        - key: release-rollback
+          title: 回滚预案确认
+          phase: release_preparation
+          priority: high
+          critical: true
+          assignee: field:pm
+          fields:
+            isCritical: true
+        - key: release-notice
+          title: 发布通知
+          phase: release_preparation
+          priority: low
+          critical: false
+          assignee: field:pm
+          fields:
+            isCritical: false
+  - id: go_live_acceptance
+    name: 上线验收
+    type: step
+    form: acceptance-form
+    assignee: field:acceptanceOwner
+    actions: [approve, reject]
+    taskOrchestration:
+      createOnEnter:
+        - key: release-confirmation
+          title: 发布结果确认
+          phase: go_live_acceptance
+          milestoneKey: go_live_confirmed
+          priority: high
+          critical: true
+          assignee: field:acceptanceOwner
+          fields:
+            isCritical: true
+        - key: business-acceptance
+          title: 业务验收
+          phase: go_live_acceptance
+          milestoneKey: business_acceptance
+          priority: high
+          critical: true
+          assignee: field:acceptanceOwner
+          fields:
+            isCritical: true
+  - id: done
+    name: 项目完成
+    type: end
+    actions: [complete]
+transitions:
+  - from: project_intake
+    action: approve
+    to: requirement_review
+  - from: project_intake
+    action: reject
+    to: project_intake
+  - from: requirement_review
+    action: approve
+    to: solution_design
+  - from: requirement_review
+    action: reject
+    to: project_intake
+  - from: solution_design
+    action: approve
+    to: development_execution
+  - from: solution_design
+    action: reject
+    to: requirement_review
+  - from: development_execution
+    action: complete
+    to: testing_validation
+    condition:
+      source: task_instance
+      field: taskSummary
+      metric: all_critical_completed
+      op: eq
+      value: true
+      filters:
+        phase: development_execution
+        critical: true
+  - from: development_execution
+    action: reject
+    to: solution_design
+  - from: testing_validation
+    action: approve
+    to: release_preparation
+    condition:
+      source: task_instance
+      field: taskSummary
+      metric: all_critical_completed
+      op: eq
+      value: true
+      filters:
+        phase: testing_validation
+        critical: true
+  - from: testing_validation
+    action: reject
+    to: development_execution
+  - from: release_preparation
+    action: approve
+    to: go_live_acceptance
+  - from: release_preparation
+    action: reject
+    to: testing_validation
+  - from: go_live_acceptance
+    action: approve
+    to: done
+  - from: go_live_acceptance
+    action: reject
+    to: release_preparation

@@ -1,0 +1,9 @@
+{
+  "data": {
+    "scopeSummary": "覆盖立项、需求、方案、开发、测试、上线准备和验收。",
+    "keyRequirements": "项目全周期管理；阶段里程碑；开发任务三阶段流转；阻塞与验收追踪。",
+    "outOfScope": "不包含长期运维和版本运营。",
+    "deliverables": "流程模板、表单模板、项目示例、任务规范。",
+    "baselineConfirmed": true
+  }
+}

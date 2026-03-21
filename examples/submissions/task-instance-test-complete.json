@@ -1,0 +1,8 @@
+{
+  "currentStage": "test",
+  "stageStatus": "done",
+  "currentOwner": "u_qa_1",
+  "testSummary": "测试通过，满足上线条件。",
+  "testResult": "passed",
+  "linkedMilestoneKey": "dev_test_passed"
+}

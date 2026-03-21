@@ -1,0 +1,7 @@
+{
+  "currentStage": "test",
+  "stageStatus": "done",
+  "currentOwner": "u_qa_1",
+  "devSummary": "开发完成，已完成联调并提交测试。",
+  "linkedMilestoneKey": "dev_complete"
+}

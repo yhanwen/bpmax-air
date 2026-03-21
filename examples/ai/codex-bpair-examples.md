@@ -59,3 +59,19 @@ Expected skill behavior:
 - call `bpair task-instance submit --id ... --action ... --json` as needed
 - call `bpair runtime explain`
 - explain current phase-gate status and remaining blockers
+
+## Example 5
+
+User prompt:
+
+```text
+创建一个软件项目管理流程，主流程覆盖立项到上线验收，每个开发任务都要经历设计、开发、测试三个阶段，并给我 blueprint 和可执行示例。
+```
+
+Expected skill behavior:
+
+- use `examples/ai/software-project-management.blueprint.yaml` as the reference shape
+- create or patch forms for project intake, requirement baseline, solution review, release readiness, and acceptance
+- create a flow that uses `task-instance` seeding for development tasks
+- ensure development tasks can be progressed with `task-instance submit --action start|submit_review|reject|complete`
+- explain that project stage-gates depend on `task-instance` aggregate completion

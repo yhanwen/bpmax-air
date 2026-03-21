@@ -1,0 +1,60 @@
+{
+  "kind": "form-template",
+  "version": "v1",
+  "key": "solution-review-form",
+  "name": "技术方案评审表",
+  "schema": {
+    "fields": [
+      {
+        "key": "architectureSummary",
+        "label": "技术方案概述",
+        "type": "textarea",
+        "required": true
+      },
+      {
+        "key": "impactScope",
+        "label": "架构影响范围",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "key": "riskAndDependency",
+        "label": "风险与依赖",
+        "type": "textarea",
+        "required": true
+      },
+      {
+        "key": "resourcePlan",
+        "label": "资源评估",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "key": "designApproved",
+        "label": "方案评审通过",
+        "type": "boolean",
+        "required": true
+      }
+    ]
+  },
+  "layout": {
+    "groups": [
+      {
+        "key": "u6280u672fu65b9u6848",
+        "title": "技术方案",
+        "fields": [
+          "architectureSummary",
+          "impactScope",
+          "riskAndDependency",
+          "resourcePlan",
+          "designApproved"
+        ]
+      }
+    ]
+  },
+  "behavior": {
+    "computed": [],
+    "draftable": true
+  },
+  "metadata": {}
+}

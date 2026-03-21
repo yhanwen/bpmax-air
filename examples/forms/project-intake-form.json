@@ -1,0 +1,131 @@
+{
+  "kind": "form-template",
+  "version": "v1",
+  "key": "project-intake-form",
+  "name": "软件项目立项表",
+  "schema": {
+    "fields": [
+      {
+        "key": "projectName",
+        "label": "项目名称",
+        "type": "text",
+        "required": true
+      },
+      {
+        "key": "pm",
+        "label": "项目经理",
+        "type": "user",
+        "required": true
+      },
+      {
+        "key": "productOwner",
+        "label": "产品负责人",
+        "type": "user",
+        "required": true
+      },
+      {
+        "key": "techLead",
+        "label": "技术负责人",
+        "type": "user",
+        "required": true
+      },
+      {
+        "key": "devLead",
+        "label": "开发负责人",
+        "type": "user",
+        "required": true
+      },
+      {
+        "key": "qaLead",
+        "label": "测试负责人",
+        "type": "user",
+        "required": true
+      },
+      {
+        "key": "acceptanceOwner",
+        "label": "验收人",
+        "type": "user",
+        "required": true
+      },
+      {
+        "key": "goalSummary",
+        "label": "项目目标",
+        "type": "textarea",
+        "required": true
+      },
+      {
+        "key": "projectBackground",
+        "label": "项目背景",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "key": "plannedStartDate",
+        "label": "计划开始日期",
+        "type": "date",
+        "required": true
+      },
+      {
+        "key": "plannedEndDate",
+        "label": "计划结束日期",
+        "type": "date",
+        "required": true
+      },
+      {
+        "key": "projectLevel",
+        "label": "项目级别",
+        "type": "select",
+        "required": true,
+        "options": [
+          {
+            "label": "P1",
+            "value": "p1"
+          },
+          {
+            "label": "P2",
+            "value": "p2"
+          },
+          {
+            "label": "P3",
+            "value": "p3"
+          }
+        ]
+      },
+      {
+        "key": "developmentTasks",
+        "label": "开发任务清单",
+        "type": "table",
+        "required": false,
+        "description": "每行至少包含 taskKey、title、description、priority、isCritical、designOwner、developerOwner、testerOwner、currentOwner、acceptanceCriteria"
+      }
+    ]
+  },
+  "layout": {
+    "groups": [
+      {
+        "key": "u9879u76eeu57fau7840u4fe1u606f",
+        "title": "项目基础信息",
+        "fields": [
+          "projectName",
+          "pm",
+          "productOwner",
+          "techLead",
+          "devLead",
+          "qaLead",
+          "acceptanceOwner",
+          "goalSummary",
+          "projectBackground",
+          "plannedStartDate",
+          "plannedEndDate",
+          "projectLevel",
+          "developmentTasks"
+        ]
+      }
+    ]
+  },
+  "behavior": {
+    "computed": [],
+    "draftable": true
+  },
+  "metadata": {}
+}

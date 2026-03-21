@@ -1,6 +1,6 @@
 {
   "name": "@bpair/shared",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Shared schemas, errors, and stable JSON result contracts for BPMax-Air.",
   "license": "MIT",
   "type": "module",

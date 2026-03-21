@@ -1,0 +1,63 @@
+{
+  "kind": "form-template",
+  "version": "v1",
+  "key": "acceptance-form",
+  "name": "上线验收表",
+  "schema": {
+    "fields": [
+      {
+        "key": "releaseResult",
+        "label": "上线结果",
+        "type": "textarea",
+        "required": true
+      },
+      {
+        "key": "acceptanceConclusion",
+        "label": "验收结论",
+        "type": "select",
+        "required": true,
+        "options": [
+          {
+            "label": "通过",
+            "value": "approved"
+          },
+          {
+            "label": "驳回",
+            "value": "rejected"
+          }
+        ]
+      },
+      {
+        "key": "openIssues",
+        "label": "遗留问题",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "key": "acceptanceComment",
+        "label": "验收意见",
+        "type": "textarea",
+        "required": false
+      }
+    ]
+  },
+  "layout": {
+    "groups": [
+      {
+        "key": "u4e0au7ebfu9a8cu6536",
+        "title": "上线验收",
+        "fields": [
+          "releaseResult",
+          "acceptanceConclusion",
+          "openIssues",
+          "acceptanceComment"
+        ]
+      }
+    ]
+  },
+  "behavior": {
+    "computed": [],
+    "draftable": true
+  },
+  "metadata": {}
+}

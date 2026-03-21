@@ -335,12 +335,15 @@ export class BpairEngine {
   }): TaskInstanceSnapshotV1 {
     const action = taskInstanceActionSchema.parse(input.action);
     const task = this.mustTaskInstance(input.id);
-    const nextStatus = this.resolveTaskInstanceNextStatus(task.status, action);
     const payload = input.data ?? {};
+    const mergedFields = { ...task.fields, ...payload };
+    this.validateTaskInstanceAction(task, action, mergedFields);
+    const nextStatus = this.resolveTaskInstanceNextStatus(task.status, action);
     const next: TaskInstanceSnapshotV1 = {
       ...task,
       status: nextStatus,
-      fields: { ...task.fields, ...payload },
+      fields: mergedFields,
+      assignees: this.resolveTaskInstanceAssignees(task, payload),
       actionLog: [
         ...task.actionLog,
         {
@@ -540,7 +543,9 @@ export class BpairEngine {
       phase: input.phase ?? null,
       milestoneKey: input.milestoneKey ?? null,
       priority: input.priority ?? null,
-      assignees: input.assignees?.length ? input.assignees : ["system"],
+      assignees: input.assignees?.length
+        ? input.assignees
+        : this.resolveAssigneesFromFields(input.fields ?? {}, ["system"]),
       status: "pending",
       fields: { ...(input.fields ?? {}) },
       actionLog: [],
@@ -688,15 +693,20 @@ export class BpairEngine {
     if (!step.taskOrchestration) {
       return;
     }
+    const existingTaskInstances = this.options.repository.listTaskInstances({ projectId: project.id });
     for (const template of step.taskOrchestration.createOnEnter) {
+      const phase = template.phase ?? step.id;
+      if (template.key && existingTaskInstances.some((task) => task.templateKey === template.key && task.phase === phase)) {
+        continue;
+      }
       const assignees = template.assigneeRule
         ? this.resolveAssignees({ ...step, assigneeRule: template.assigneeRule }, project.data.fields)
         : ["system"];
-      this.createTaskInstanceRecord(project, {
+      const created = this.createTaskInstanceRecord(project, {
         templateKey: template.key ?? null,
         title: template.title,
         description: template.description ?? null,
-        phase: template.phase ?? step.id,
+        phase,
         milestoneKey: template.milestoneKey ?? null,
         priority: template.priority ?? null,
         assignees,
@@ -705,6 +715,7 @@ export class BpairEngine {
           isCritical: template.critical
         }
       });
+      existingTaskInstances.push(created);
     }
 
     for (const seed of step.taskOrchestration.seedFromFields) {
@@ -721,12 +732,18 @@ export class BpairEngine {
         if (typeof title !== "string" || !title.trim()) {
           continue;
         }
+        const templateKey = seed.templateKeyField ? this.asNullableString(row[seed.templateKeyField]) : null;
+        const phase = seed.phaseField ? this.asNullableString(row[seed.phaseField]) : step.id;
+        if (templateKey && existingTaskInstances.some((task) => task.templateKey === templateKey && task.phase === phase)) {
+          continue;
+        }
         const assigneeValue = seed.assigneeField ? row[seed.assigneeField] : undefined;
         const assignees = this.normalizeAssignees(assigneeValue, seed.defaultAssignees);
-        this.createTaskInstanceRecord(project, {
+        const created = this.createTaskInstanceRecord(project, {
+          templateKey,
           title,
           description: seed.descriptionField ? this.asNullableString(row[seed.descriptionField]) : null,
-          phase: seed.phaseField ? this.asNullableString(row[seed.phaseField]) : step.id,
+          phase,
           milestoneKey: seed.milestoneField ? this.asNullableString(row[seed.milestoneField]) : null,
           priority: seed.priorityField ? this.asNullableString(row[seed.priorityField]) : null,
           assignees,
@@ -736,6 +753,7 @@ export class BpairEngine {
             isCritical: seed.criticalField ? Boolean(row[seed.criticalField]) : Boolean(seed.defaultFields.isCritical)
           }
         });
+        existingTaskInstances.push(created);
       }
     }
 
@@ -827,6 +845,28 @@ export class BpairEngine {
     return "in_progress";
   }
 
+  private validateTaskInstanceAction(task: TaskInstanceSnapshotV1, action: TaskInstanceAction, mergedFields: Record<string, unknown>): void {
+    const currentStage = this.asNullableString(task.fields.currentStage);
+    const nextStage = this.asNullableString(mergedFields.currentStage) ?? currentStage;
+    if (!currentStage && !nextStage) {
+      return;
+    }
+    if (action === "submit_review") {
+      if (currentStage !== "develop") {
+        throw new BpairError("TASK_INSTANCE_STAGE_INVALID", "Only develop-stage task instances can submit review");
+      }
+      if (nextStage !== "test") {
+        throw new BpairError("TASK_INSTANCE_STAGE_INVALID", "submit_review must move currentStage to test");
+      }
+    }
+    if (action === "reject" && nextStage !== "develop") {
+      throw new BpairError("TASK_INSTANCE_STAGE_INVALID", "reject must move currentStage back to develop");
+    }
+    if (action === "complete" && task.status === "waiting_review" && nextStage !== "test") {
+        throw new BpairError("TASK_INSTANCE_STAGE_INVALID", "complete must keep currentStage at test");
+    }
+  }
+
   private normalizeAssignees(value: unknown, fallback: string[]): string[] {
     if (typeof value === "string" && value.trim()) {
       return [value];
@@ -842,6 +882,26 @@ export class BpairEngine {
 
   private asNullableString(value: unknown): string | null {
     return typeof value === "string" && value.trim() ? value : null;
+  }
+
+  private resolveTaskInstanceAssignees(task: TaskInstanceSnapshotV1, payload: Record<string, unknown>): string[] {
+    return this.resolveAssigneesFromFields({ ...task.fields, ...payload }, task.assignees);
+  }
+
+  private resolveAssigneesFromFields(fields: Record<string, unknown>, fallback: string[]): string[] {
+    if (fields.currentOwner !== undefined) {
+      return this.normalizeAssignees(fields.currentOwner, fallback);
+    }
+    if (fields.currentStage === "design") {
+      return this.normalizeAssignees(fields.designOwner, fallback);
+    }
+    if (fields.currentStage === "develop") {
+      return this.normalizeAssignees(fields.developerOwner, fallback);
+    }
+    if (fields.currentStage === "test") {
+      return this.normalizeAssignees(fields.testerOwner, fallback);
+    }
+    return fallback;
   }
 
   private getEntryStep(flow: FlowSchemaV1): FlowStep {

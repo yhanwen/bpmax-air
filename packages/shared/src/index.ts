@@ -106,6 +106,7 @@ export const taskInstanceTemplateSchema = z.object({
 
 export const taskInstanceSeedSchema = z.object({
   field: z.string(),
+  templateKeyField: z.string().optional(),
   titleField: z.string().default("title"),
   descriptionField: z.string().optional(),
   phaseField: z.string().optional(),

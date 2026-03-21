@@ -24,6 +24,7 @@ interface BlueprintField {
   type: FieldType;
   required?: boolean;
   defaultValue?: unknown;
+  description?: string;
   options?: Array<{ label: string; value: string | number | boolean }>;
 }
 
@@ -42,12 +43,53 @@ interface BlueprintStep {
   assignee?: string;
   actions?: string[];
   subflowKey?: string;
+  taskOrchestration?: {
+    createOnEnter?: Array<{
+      key?: string;
+      title: string;
+      description?: string;
+      phase?: string;
+      milestoneKey?: string;
+      priority?: string;
+      critical?: boolean;
+      assignee?: string;
+      fields?: Record<string, unknown>;
+    }>;
+    seedFromFields?: Array<{
+      field: string;
+      templateKeyField?: string;
+      titleField?: string;
+      descriptionField?: string;
+      phaseField?: string;
+      milestoneField?: string;
+      assigneeField?: string;
+      priorityField?: string;
+      criticalField?: string;
+      defaultAssignees?: string[];
+      defaultFields?: Record<string, unknown>;
+    }>;
+  };
 }
 
 interface BlueprintTransition {
   from: string;
   action: string;
   to: string;
+  condition?: {
+    source?: "field" | "task_instance";
+    field: string;
+    metric?: "value" | "count" | "completed_count" | "open_count" | "blocked_count" | "all_completed" | "all_critical_completed" | "any_blocked";
+    op?: "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "in" | "exists";
+    value?: unknown;
+    filters?: {
+      phase?: string;
+      milestoneKey?: string;
+      templateKey?: string;
+      assignee?: string;
+      critical?: boolean;
+      statuses?: string[];
+    };
+  };
 }
 
 interface Blueprint {
@@ -197,6 +239,7 @@ function toFormJson(form: BlueprintForm) {
         type: field.type,
         required: field.required ?? false,
         ...(field.defaultValue !== undefined ? { defaultValue: field.defaultValue } : {}),
+        ...(field.description ? { description: field.description } : {}),
         ...(field.options ? { options: field.options } : {})
       }))
     },
@@ -231,6 +274,38 @@ function parseAssigneeRule(value: string | undefined) {
   return { type: "static", value };
 }
 
+function toTaskOrchestration(taskOrchestration: BlueprintStep["taskOrchestration"]) {
+  if (!taskOrchestration) {
+    return undefined;
+  }
+  return {
+    createOnEnter: (taskOrchestration.createOnEnter ?? []).map((template) => ({
+      ...(template.key ? { key: template.key } : {}),
+      title: template.title,
+      ...(template.description ? { description: template.description } : {}),
+      ...(template.phase ? { phase: template.phase } : {}),
+      ...(template.milestoneKey ? { milestoneKey: template.milestoneKey } : {}),
+      ...(template.priority ? { priority: template.priority } : {}),
+      critical: template.critical ?? false,
+      ...(parseAssigneeRule(template.assignee) ? { assigneeRule: parseAssigneeRule(template.assignee) } : {}),
+      fields: template.fields ?? {}
+    })),
+    seedFromFields: (taskOrchestration.seedFromFields ?? []).map((seed) => ({
+      field: seed.field,
+      ...(seed.templateKeyField ? { templateKeyField: seed.templateKeyField } : {}),
+      ...(seed.titleField ? { titleField: seed.titleField } : {}),
+      ...(seed.descriptionField ? { descriptionField: seed.descriptionField } : {}),
+      ...(seed.phaseField ? { phaseField: seed.phaseField } : {}),
+      ...(seed.milestoneField ? { milestoneField: seed.milestoneField } : {}),
+      ...(seed.assigneeField ? { assigneeField: seed.assigneeField } : {}),
+      ...(seed.priorityField ? { priorityField: seed.priorityField } : {}),
+      ...(seed.criticalField ? { criticalField: seed.criticalField } : {}),
+      ...(seed.defaultAssignees ? { defaultAssignees: seed.defaultAssignees } : {}),
+      defaultFields: seed.defaultFields ?? {}
+    }))
+  };
+}
+
 function toFlowJson(blueprint: Blueprint) {
   return {
     kind: "flow-template",
@@ -246,12 +321,14 @@ function toFlowJson(blueprint: Blueprint) {
       ...(step.form ? { taskForm: step.form } : {}),
       ...(parseAssigneeRule(step.assignee) ? { assigneeRule: parseAssigneeRule(step.assignee) } : {}),
       actions: step.actions ?? ["complete"],
+      ...(toTaskOrchestration(step.taskOrchestration) ? { taskOrchestration: toTaskOrchestration(step.taskOrchestration) } : {}),
       ...(step.type === "subflow" && step.subflowKey ? { subflow: { flowKey: step.subflowKey } } : {})
     })),
     transitions: blueprint.transitions.map((transition) => ({
       from: transition.from,
       action: transition.action,
-      to: transition.to
+      to: transition.to,
+      ...(transition.condition ? { condition: transition.condition } : {})
     })),
     policies: blueprint.flow.slaHours ? { slaHours: blueprint.flow.slaHours } : {},
     triggers: [],

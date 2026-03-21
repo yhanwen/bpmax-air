@@ -1,0 +1,478 @@
+{
+  "kind": "flow-template",
+  "version": "v1",
+  "key": "software-project-management",
+  "name": "软件项目管理流程",
+  "createForm": "project-intake-form",
+  "entry": "project_intake",
+  "steps": [
+    {
+      "id": "project_intake",
+      "type": "step",
+      "name": "项目立项",
+      "assigneeRule": {
+        "type": "field",
+        "value": "pm"
+      },
+      "actions": [
+        "approve",
+        "reject"
+      ]
+    },
+    {
+      "id": "requirement_review",
+      "type": "step",
+      "name": "需求澄清",
+      "taskForm": "requirement-baseline-form",
+      "assigneeRule": {
+        "type": "field",
+        "value": "productOwner"
+      },
+      "actions": [
+        "approve",
+        "reject"
+      ],
+      "taskOrchestration": {
+        "createOnEnter": [
+          {
+            "key": "req-interview",
+            "title": "需求访谈",
+            "phase": "requirement_review",
+            "priority": "high",
+            "critical": true,
+            "assigneeRule": {
+              "type": "field",
+              "value": "productOwner"
+            },
+            "fields": {
+              "isCritical": true
+            }
+          },
+          {
+            "key": "req-doc",
+            "title": "需求文档整理",
+            "phase": "requirement_review",
+            "priority": "medium",
+            "critical": false,
+            "assigneeRule": {
+              "type": "field",
+              "value": "productOwner"
+            },
+            "fields": {
+              "isCritical": false
+            }
+          },
+          {
+            "key": "req-review",
+            "title": "需求评审",
+            "phase": "requirement_review",
+            "milestoneKey": "requirement_baseline",
+            "priority": "high",
+            "critical": true,
+            "assigneeRule": {
+              "type": "field",
+              "value": "productOwner"
+            },
+            "fields": {
+              "isCritical": true
+            }
+          }
+        ],
+        "seedFromFields": []
+      }
+    },
+    {
+      "id": "solution_design",
+      "type": "step",
+      "name": "方案设计",
+      "taskForm": "solution-review-form",
+      "assigneeRule": {
+        "type": "field",
+        "value": "techLead"
+      },
+      "actions": [
+        "approve",
+        "reject"
+      ],
+      "taskOrchestration": {
+        "createOnEnter": [
+          {
+            "key": "design-architecture",
+            "title": "总体方案设计",
+            "phase": "solution_design",
+            "priority": "high",
+            "critical": true,
+            "assigneeRule": {
+              "type": "field",
+              "value": "techLead"
+            },
+            "fields": {
+              "isCritical": true
+            }
+          },
+          {
+            "key": "design-interface",
+            "title": "接口与数据设计",
+            "phase": "solution_design",
+            "priority": "medium",
+            "critical": false,
+            "assigneeRule": {
+              "type": "field",
+              "value": "techLead"
+            },
+            "fields": {
+              "isCritical": false
+            }
+          },
+          {
+            "key": "design-review",
+            "title": "技术方案评审",
+            "phase": "solution_design",
+            "milestoneKey": "design_review_passed",
+            "priority": "high",
+            "critical": true,
+            "assigneeRule": {
+              "type": "field",
+              "value": "techLead"
+            },
+            "fields": {
+              "isCritical": true
+            }
+          }
+        ],
+        "seedFromFields": []
+      }
+    },
+    {
+      "id": "development_execution",
+      "type": "step",
+      "name": "开发执行",
+      "assigneeRule": {
+        "type": "field",
+        "value": "devLead"
+      },
+      "actions": [
+        "complete",
+        "reject"
+      ],
+      "taskOrchestration": {
+        "createOnEnter": [
+          {
+            "key": "dev-env-setup",
+            "title": "开发环境准备",
+            "phase": "development_execution",
+            "priority": "medium",
+            "critical": false,
+            "assigneeRule": {
+              "type": "field",
+              "value": "devLead"
+            },
+            "fields": {
+              "workType": "setup",
+              "currentStage": "develop",
+              "stageStatus": "pending",
+              "isCritical": false
+            }
+          }
+        ],
+        "seedFromFields": [
+          {
+            "field": "developmentTasks",
+            "templateKeyField": "taskKey",
+            "titleField": "title",
+            "descriptionField": "description",
+            "assigneeField": "currentOwner",
+            "priorityField": "priority",
+            "criticalField": "isCritical",
+            "defaultFields": {
+              "workType": "feature",
+              "currentStage": "design",
+              "stageStatus": "pending"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "testing_validation",
+      "type": "step",
+      "name": "测试验证",
+      "assigneeRule": {
+        "type": "field",
+        "value": "qaLead"
+      },
+      "actions": [
+        "approve",
+        "reject"
+      ],
+      "taskOrchestration": {
+        "createOnEnter": [
+          {
+            "key": "test-integration",
+            "title": "集成测试",
+            "phase": "testing_validation",
+            "milestoneKey": "test_passed",
+            "priority": "high",
+            "critical": true,
+            "assigneeRule": {
+              "type": "field",
+              "value": "qaLead"
+            },
+            "fields": {
+              "isCritical": true
+            }
+          },
+          {
+            "key": "test-bug-burn-down",
+            "title": "缺陷收敛",
+            "phase": "testing_validation",
+            "priority": "high",
+            "critical": true,
+            "assigneeRule": {
+              "type": "field",
+              "value": "qaLead"
+            },
+            "fields": {
+              "isCritical": true
+            }
+          },
+          {
+            "key": "test-regression",
+            "title": "回归测试",
+            "phase": "testing_validation",
+            "priority": "medium",
+            "critical": false,
+            "assigneeRule": {
+              "type": "field",
+              "value": "qaLead"
+            },
+            "fields": {
+              "isCritical": false
+            }
+          }
+        ],
+        "seedFromFields": []
+      }
+    },
+    {
+      "id": "release_preparation",
+      "type": "step",
+      "name": "上线准备",
+      "taskForm": "release-readiness-form",
+      "assigneeRule": {
+        "type": "field",
+        "value": "pm"
+      },
+      "actions": [
+        "approve",
+        "reject"
+      ],
+      "taskOrchestration": {
+        "createOnEnter": [
+          {
+            "key": "release-checklist",
+            "title": "上线检查单确认",
+            "phase": "release_preparation",
+            "milestoneKey": "release_checklist_completed",
+            "priority": "high",
+            "critical": true,
+            "assigneeRule": {
+              "type": "field",
+              "value": "pm"
+            },
+            "fields": {
+              "isCritical": true
+            }
+          },
+          {
+            "key": "release-rollback",
+            "title": "回滚预案确认",
+            "phase": "release_preparation",
+            "priority": "high",
+            "critical": true,
+            "assigneeRule": {
+              "type": "field",
+              "value": "pm"
+            },
+            "fields": {
+              "isCritical": true
+            }
+          },
+          {
+            "key": "release-notice",
+            "title": "发布通知",
+            "phase": "release_preparation",
+            "priority": "low",
+            "critical": false,
+            "assigneeRule": {
+              "type": "field",
+              "value": "pm"
+            },
+            "fields": {
+              "isCritical": false
+            }
+          }
+        ],
+        "seedFromFields": []
+      }
+    },
+    {
+      "id": "go_live_acceptance",
+      "type": "step",
+      "name": "上线验收",
+      "taskForm": "acceptance-form",
+      "assigneeRule": {
+        "type": "field",
+        "value": "acceptanceOwner"
+      },
+      "actions": [
+        "approve",
+        "reject"
+      ],
+      "taskOrchestration": {
+        "createOnEnter": [
+          {
+            "key": "release-confirmation",
+            "title": "发布结果确认",
+            "phase": "go_live_acceptance",
+            "milestoneKey": "go_live_confirmed",
+            "priority": "high",
+            "critical": true,
+            "assigneeRule": {
+              "type": "field",
+              "value": "acceptanceOwner"
+            },
+            "fields": {
+              "isCritical": true
+            }
+          },
+          {
+            "key": "business-acceptance",
+            "title": "业务验收",
+            "phase": "go_live_acceptance",
+            "milestoneKey": "business_acceptance",
+            "priority": "high",
+            "critical": true,
+            "assigneeRule": {
+              "type": "field",
+              "value": "acceptanceOwner"
+            },
+            "fields": {
+              "isCritical": true
+            }
+          }
+        ],
+        "seedFromFields": []
+      }
+    },
+    {
+      "id": "done",
+      "type": "end",
+      "name": "项目完成",
+      "actions": [
+        "complete"
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "from": "project_intake",
+      "action": "approve",
+      "to": "requirement_review"
+    },
+    {
+      "from": "project_intake",
+      "action": "reject",
+      "to": "project_intake"
+    },
+    {
+      "from": "requirement_review",
+      "action": "approve",
+      "to": "solution_design"
+    },
+    {
+      "from": "requirement_review",
+      "action": "reject",
+      "to": "project_intake"
+    },
+    {
+      "from": "solution_design",
+      "action": "approve",
+      "to": "development_execution"
+    },
+    {
+      "from": "solution_design",
+      "action": "reject",
+      "to": "requirement_review"
+    },
+    {
+      "from": "development_execution",
+      "action": "complete",
+      "to": "testing_validation",
+      "condition": {
+        "source": "task_instance",
+        "field": "taskSummary",
+        "metric": "all_critical_completed",
+        "op": "eq",
+        "value": true,
+        "filters": {
+          "phase": "development_execution",
+          "critical": true
+        }
+      }
+    },
+    {
+      "from": "development_execution",
+      "action": "reject",
+      "to": "solution_design"
+    },
+    {
+      "from": "testing_validation",
+      "action": "approve",
+      "to": "release_preparation",
+      "condition": {
+        "source": "task_instance",
+        "field": "taskSummary",
+        "metric": "all_critical_completed",
+        "op": "eq",
+        "value": true,
+        "filters": {
+          "phase": "testing_validation",
+          "critical": true
+        }
+      }
+    },
+    {
+      "from": "testing_validation",
+      "action": "reject",
+      "to": "development_execution"
+    },
+    {
+      "from": "release_preparation",
+      "action": "approve",
+      "to": "go_live_acceptance"
+    },
+    {
+      "from": "release_preparation",
+      "action": "reject",
+      "to": "testing_validation"
+    },
+    {
+      "from": "go_live_acceptance",
+      "action": "approve",
+      "to": "done"
+    },
+    {
+      "from": "go_live_acceptance",
+      "action": "reject",
+      "to": "release_preparation"
+    }
+  ],
+  "policies": {
+    "slaHours": 168
+  },
+  "triggers": [],
+  "metadata": {
+    "source": "blueprint-generator"
+  }
+}

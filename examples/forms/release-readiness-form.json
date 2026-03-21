@@ -1,0 +1,60 @@
+{
+  "kind": "form-template",
+  "version": "v1",
+  "key": "release-readiness-form",
+  "name": "上线准备确认表",
+  "schema": {
+    "fields": [
+      {
+        "key": "testConclusion",
+        "label": "测试结论",
+        "type": "textarea",
+        "required": true
+      },
+      {
+        "key": "residualRisks",
+        "label": "剩余风险",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "key": "releaseWindow",
+        "label": "发布时间窗口",
+        "type": "datetime",
+        "required": true
+      },
+      {
+        "key": "rollbackPlan",
+        "label": "回滚方案",
+        "type": "textarea",
+        "required": true
+      },
+      {
+        "key": "checklistCompleted",
+        "label": "上线检查单已完成",
+        "type": "boolean",
+        "required": true
+      }
+    ]
+  },
+  "layout": {
+    "groups": [
+      {
+        "key": "u4e0au7ebfu51c6u5907",
+        "title": "上线准备",
+        "fields": [
+          "testConclusion",
+          "residualRisks",
+          "releaseWindow",
+          "rollbackPlan",
+          "checklistCompleted"
+        ]
+      }
+    ]
+  },
+  "behavior": {
+    "computed": [],
+    "draftable": true
+  },
+  "metadata": {}
+}

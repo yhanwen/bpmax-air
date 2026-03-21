@@ -1,0 +1,9 @@
+{
+  "data": {
+    "architectureSummary": "采用 BPMax-Air 主流程 + 项目级 task-instance 双层模型。",
+    "impactScope": "影响流程模板、表单模板、CLI 操作范式和运行时解释。",
+    "riskAndDependency": "依赖 task-instance 聚合条件和阶段性回退后去重逻辑。",
+    "resourcePlan": "项目经理 1 人、产品 1 人、技术负责人 1 人、开发 2 人、测试 1 人。",
+    "designApproved": true
+  }
+}

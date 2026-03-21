@@ -1,6 +1,6 @@
 {
   "name": "@bpair/core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Core workflow engine and runtime for BPMax-Air.",
   "license": "MIT",
   "type": "module",

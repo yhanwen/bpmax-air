@@ -1,0 +1,60 @@
+{
+  "kind": "form-template",
+  "version": "v1",
+  "key": "requirement-baseline-form",
+  "name": "需求基线确认表",
+  "schema": {
+    "fields": [
+      {
+        "key": "scopeSummary",
+        "label": "范围说明",
+        "type": "textarea",
+        "required": true
+      },
+      {
+        "key": "keyRequirements",
+        "label": "关键需求清单",
+        "type": "textarea",
+        "required": true
+      },
+      {
+        "key": "outOfScope",
+        "label": "非范围说明",
+        "type": "textarea",
+        "required": false
+      },
+      {
+        "key": "deliverables",
+        "label": "交付物",
+        "type": "textarea",
+        "required": true
+      },
+      {
+        "key": "baselineConfirmed",
+        "label": "需求基线已确认",
+        "type": "boolean",
+        "required": true
+      }
+    ]
+  },
+  "layout": {
+    "groups": [
+      {
+        "key": "u9700u6c42u57fau7ebf",
+        "title": "需求基线",
+        "fields": [
+          "scopeSummary",
+          "keyRequirements",
+          "outOfScope",
+          "deliverables",
+          "baselineConfirmed"
+        ]
+      }
+    ]
+  },
+  "behavior": {
+    "computed": [],
+    "draftable": true
+  },
+  "metadata": {}
+}

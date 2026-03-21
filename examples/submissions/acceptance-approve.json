@@ -1,0 +1,8 @@
+{
+  "data": {
+    "releaseResult": "系统已按计划上线，核心流程运行正常。",
+    "acceptanceConclusion": "approved",
+    "openIssues": "移动端样式还需后续优化。",
+    "acceptanceComment": "同意验收，进入项目完成状态。"
+  }
+}

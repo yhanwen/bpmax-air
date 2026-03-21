@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.0
+
+- Added software project management blueprint, forms, seeded task examples, and staged task-instance submissions
+- Added staged task-instance assignee handoff based on task fields and stricter stage transition validation
+- Fixed rollback task seeding to deduplicate within the current phase instead of across the whole project
+- Fixed staged task completion so direct-complete work items still finish correctly when they never enter review
+- Added release workflow support for publishing `@bpair/cli` to npm during tagged releases
+
 ## 0.2.0
 
 - Added project-scoped parallel `task-instance` runtime model

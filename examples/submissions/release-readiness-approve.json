@@ -1,0 +1,9 @@
+{
+  "data": {
+    "testConclusion": "关键测试项通过，回归测试完成。",
+    "residualRisks": "存在少量非关键体验问题，已记录到遗留问题。",
+    "releaseWindow": "2026-06-28T21:00:00+08:00",
+    "rollbackPlan": "保留旧版流程配置并支持一键回退。",
+    "checklistCompleted": true
+  }
+}

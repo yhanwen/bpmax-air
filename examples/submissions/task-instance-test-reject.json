@@ -1,0 +1,7 @@
+{
+  "currentStage": "develop",
+  "stageStatus": "in_progress",
+  "currentOwner": "u_backend_1",
+  "testResult": "rejected",
+  "blockerReason": "登录态刷新逻辑存在缺陷，需要返工。"
+}

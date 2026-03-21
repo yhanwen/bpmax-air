@@ -32,12 +32,19 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          registry-url: https://registry.npmjs.org
 
       - name: Install
         run: pnpm install --frozen-lockfile
 
       - name: Validate
         run: pnpm check
+
+      - name: Publish CLI to npm
+        if: ${{ secrets.NPM_TOKEN != '' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm --filter @bpair/cli publish --no-git-checks --access public
 
       - name: Package CLI tarball
         run: pnpm pack:cli

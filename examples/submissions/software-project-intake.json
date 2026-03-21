@@ -1,0 +1,44 @@
+{
+  "data": {
+    "projectName": "统一项目协同平台",
+    "pm": "u_pm",
+    "productOwner": "u_po",
+    "techLead": "u_tl",
+    "devLead": "u_devlead",
+    "qaLead": "u_qalead",
+    "acceptanceOwner": "u_biz",
+    "goalSummary": "建设统一的软件项目协同平台，打通需求、开发、测试和上线验收。",
+    "projectBackground": "当前项目管理过程分散在多个系统中，缺少统一阶段门和任务协同。",
+    "plannedStartDate": "2026-03-24",
+    "plannedEndDate": "2026-06-30",
+    "projectLevel": "p1",
+    "developmentTasks": [
+      {
+        "taskKey": "feature-auth-center",
+        "title": "统一认证中心",
+        "description": "完成认证中心设计、开发和测试联调。",
+        "priority": "high",
+        "isCritical": true,
+        "workType": "feature",
+        "designOwner": "u_architect",
+        "developerOwner": "u_backend_1",
+        "testerOwner": "u_qa_1",
+        "currentOwner": "u_architect",
+        "acceptanceCriteria": "支持单点登录、权限校验和审计日志。"
+      },
+      {
+        "taskKey": "feature-dashboard",
+        "title": "项目看板",
+        "description": "完成项目看板页面设计、开发和测试。",
+        "priority": "medium",
+        "isCritical": false,
+        "workType": "feature",
+        "designOwner": "u_designer",
+        "developerOwner": "u_frontend_1",
+        "testerOwner": "u_qa_2",
+        "currentOwner": "u_designer",
+        "acceptanceCriteria": "支持阶段状态、里程碑和任务摘要展示。"
+      }
+    ]
+  }
+}
