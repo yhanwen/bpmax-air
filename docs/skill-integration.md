@@ -39,6 +39,9 @@ Recommended orchestration pattern for agent skills:
 - `create_project`
 - `update_task_form`
 - `submit_task_action`
+- `create_task_instance`
+- `batch_create_task_instances`
+- `submit_task_instance_action`
 - `get_project_snapshot`
 - `explain_project_blockers`
 
@@ -62,9 +65,19 @@ Recommended orchestration pattern for agent skills:
 - `submit_task_action`
   - Generate one submission JSON file if needed
   - Call `npx -y @bpair/cli task submit --task <task-id> --action <action> --data <submission.json> --json`
+- `create_task_instance`
+  - Generate one task instance payload JSON file
+  - Call `npx -y @bpair/cli task-instance create --project <project-id> --input <task-instance.json> --json`
+- `batch_create_task_instances`
+  - Generate one JSON array payload file
+  - Call `npx -y @bpair/cli task-instance batch-create --project <project-id> --input <task-instances.json> --json`
+- `submit_task_instance_action`
+  - Generate one payload JSON file if needed
+  - Call `npx -y @bpair/cli task-instance submit --id <task-instance-id> --action <action> --data <payload.json> --json`
 - `get_project_snapshot`
   - Call `npx -y @bpair/cli project get --id <project-id> --json`
   - Optionally call `npx -y @bpair/cli task list --project <project-id> --json`
+  - Optionally call `npx -y @bpair/cli task-instance list --project <project-id> --json`
 - `explain_project_blockers`
   - Call `npx -y @bpair/cli runtime explain --project <project-id> --json`
   - Optionally call `npx -y @bpair/cli audit tail --project <project-id> --json`
@@ -89,6 +102,8 @@ Each skill action should return two layers:
 - Read existing template or project state before patching
 - If a requested change can be expressed as a patch, prefer `update` over recreate
 - After any state-changing task submission, fetch the updated project snapshot
+- Distinguish flow-step `task` from project-level `task-instance` and choose the correct command surface
+- For software project scenarios, prefer `task-instance` for daily execution work and reserve `task submit` for phase-gate actions
 - Use `runtime explain` when the user asks why a project is blocked or stalled
 - When the user asks what workflows or forms exist, query and return stored templates only, not skill action names
 
@@ -98,13 +113,13 @@ When another agent or skill wraps `bpair`, prefer this internal contract:
 
 ```json
 {
-  "action": "submit_task_action",
+  "action": "submit_task_instance_action",
   "inputs": {
-    "taskId": "t_123",
-    "action": "approve",
-    "dataFile": "/abs/path/submit.json"
+    "taskInstanceId": "ti_123",
+    "action": "complete",
+    "dataFile": "/abs/path/task-instance-submit.json"
   },
-  "command": "npx -y @bpair/cli task submit --task t_123 --action approve --data /abs/path/submit.json --json",
+  "command": "npx -y @bpair/cli task-instance submit --id ti_123 --action complete --data /abs/path/task-instance-submit.json --json",
   "result": {
     "ok": true,
     "data": {},

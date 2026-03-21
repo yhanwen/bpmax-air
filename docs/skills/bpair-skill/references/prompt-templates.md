@@ -58,6 +58,23 @@ Return:
 4. a short explanation of the current step
 ```
 
+## Create project with parallel task instances
+
+```text
+Use BPMax-Air to create or update a software project workflow that supports parallel project tasks.
+Flow key: <flow-key>
+Project name: <project-name>
+Project create-form data:
+<json or field list>
+Task-instance payloads:
+<json array or field list>
+Return:
+1. the project create command result
+2. the task-instance create or batch-create command result
+3. the final runtime explain result
+4. a short explanation of current phase, parallel tasks, and blockers
+```
+
 ## Explain blockers
 
 ```text
@@ -66,7 +83,8 @@ Project id: <project-id>
 Read runtime and audit state first.
 Return:
 1. raw runtime explain result
-2. raw audit tail result
-3. a concise explanation of the blocker
-4. the next action needed to move the workflow
+2. raw task-instance list result if execution work matters
+3. raw audit tail result
+4. a concise explanation of the blocker
+5. the next action needed to move the workflow
 ```

@@ -9,6 +9,9 @@ import {
   formSubmissionSchema,
   makeId,
   nowIso,
+  summarizeTaskInstances,
+  taskInstanceActionSchema,
+  taskInstanceSummarySchema,
   type ActionType,
   type EventRecord,
   type FlowSchemaV1,
@@ -16,6 +19,8 @@ import {
   type FormSchemaV1,
   type FormSubmission,
   type ProjectSnapshotV1,
+  type TaskInstanceAction,
+  type TaskInstanceSnapshotV1,
   type TaskSnapshotV1
 } from "@bpair/shared";
 
@@ -52,6 +57,9 @@ export interface Repository {
   saveTask(task: TaskSnapshotV1): TaskSnapshotV1;
   getTask(taskId: string): TaskSnapshotV1 | null;
   listTasks(filter?: { projectId?: string; status?: string }): TaskSnapshotV1[];
+  saveTaskInstance(taskInstance: TaskInstanceSnapshotV1): TaskInstanceSnapshotV1;
+  getTaskInstance(taskInstanceId: string): TaskInstanceSnapshotV1 | null;
+  listTaskInstances(filter?: { projectId?: string; status?: string }): TaskInstanceSnapshotV1[];
   appendEvent(event: EventRecord): EventRecord;
   listEvents(filter?: { projectId?: string; taskId?: string; limit?: number }): EventRecord[];
   saveArtifact(artifact: ArtifactRecord): ArtifactRecord;
@@ -224,6 +232,8 @@ export class BpairEngine {
       status: "processing",
       currentStepIds: [],
       currentTaskIds: [],
+      taskInstanceIds: [],
+      taskSummary: taskInstanceSummarySchema.parse({}),
       parentProjectId: input.parentProjectId ?? null,
       data: {
         createSubmission,
@@ -259,6 +269,99 @@ export class BpairEngine {
 
   getTask(taskId: string): TaskSnapshotV1 {
     return this.mustTask(taskId);
+  }
+
+  listTaskInstances(projectId?: string): TaskInstanceSnapshotV1[] {
+    return this.options.repository.listTaskInstances(projectId ? { projectId } : undefined);
+  }
+
+  getTaskInstance(taskInstanceId: string): TaskInstanceSnapshotV1 {
+    return this.mustTaskInstance(taskInstanceId);
+  }
+
+  createTaskInstance(input: {
+    projectId: string;
+    templateKey?: string | null;
+    flowKey?: string | null;
+    title: string;
+    description?: string | null;
+    phase?: string | null;
+    milestoneKey?: string | null;
+    priority?: string | null;
+    assignees?: string[];
+    fields?: Record<string, unknown>;
+  }): TaskInstanceSnapshotV1 {
+    const project = this.mustProject(input.projectId);
+    const created = this.createTaskInstanceRecord(project, input);
+    this.emit("task_instance.created", project.id, null, {
+      taskInstanceId: created.id,
+      title: created.title,
+      phase: created.phase
+    });
+    this.refreshProjectTaskSummary(project.id);
+    return this.mustTaskInstance(created.id);
+  }
+
+  batchCreateTaskInstances(input: {
+    projectId: string;
+    items: Array<{
+      templateKey?: string | null;
+      flowKey?: string | null;
+      title: string;
+      description?: string | null;
+      phase?: string | null;
+      milestoneKey?: string | null;
+      priority?: string | null;
+      assignees?: string[];
+      fields?: Record<string, unknown>;
+    }>;
+  }): TaskInstanceSnapshotV1[] {
+    const project = this.mustProject(input.projectId);
+    const created = input.items.map((item) => this.createTaskInstanceRecord(project, item));
+    this.refreshProjectTaskSummary(project.id);
+    created.forEach((task) => this.emit("task_instance.created", project.id, null, {
+      taskInstanceId: task.id,
+      title: task.title,
+      phase: task.phase
+    }));
+    return created.map((task) => this.mustTaskInstance(task.id));
+  }
+
+  submitTaskInstance(input: {
+    id: string;
+    action: TaskInstanceAction;
+    actorId: string;
+    data?: Record<string, unknown>;
+  }): TaskInstanceSnapshotV1 {
+    const action = taskInstanceActionSchema.parse(input.action);
+    const task = this.mustTaskInstance(input.id);
+    const nextStatus = this.resolveTaskInstanceNextStatus(task.status, action);
+    const payload = input.data ?? {};
+    const next: TaskInstanceSnapshotV1 = {
+      ...task,
+      status: nextStatus,
+      fields: { ...task.fields, ...payload },
+      actionLog: [
+        ...task.actionLog,
+        {
+          at: nowIso(),
+          action,
+          actorId: input.actorId,
+          payload
+        }
+      ],
+      updatedAt: nowIso(),
+      completedAt: nextStatus === "completed" ? nowIso() : task.completedAt
+    };
+    this.options.repository.saveTaskInstance(next);
+    this.refreshProjectTaskSummary(task.projectId);
+    this.emit("task_instance.submitted", task.projectId, null, {
+      taskInstanceId: task.id,
+      action,
+      status: nextStatus,
+      actorId: input.actorId
+    });
+    return this.mustTaskInstance(task.id);
   }
 
   saveTaskDraft(taskId: string, submission: unknown): TaskSnapshotV1 {
@@ -307,6 +410,14 @@ export class BpairEngine {
       const form = this.mustForm(parsed.formTemplateKey, parsed.revision);
       this.validateSubmission(form.definition, parsed.data);
       Object.assign(fields, parsed.data);
+    }
+
+    let transition = null;
+    if (action !== "terminate" && action !== "withdraw") {
+      transition = this.pickTransition(flow.definition, step.id, action, fields, project.id);
+      if (!transition) {
+        throw new BpairError("NO_TRANSITION", `No transition from ${step.id} for action ${action}`);
+      }
     }
 
     const updatedProject: ProjectSnapshotV1 = {
@@ -358,11 +469,7 @@ export class BpairEngine {
       return this.advanceProjectToStep(project.id, this.getEntryStep(flow.definition).id);
     }
 
-    const transition = this.pickTransition(flow.definition, step.id, action, fields);
-    if (!transition) {
-      throw new BpairError("NO_TRANSITION", `No transition from ${step.id} for action ${action}`);
-    }
-    return this.advanceProjectToStep(project.id, transition.to);
+    return this.advanceProjectToStep(project.id, transition!.to);
   }
 
   reassignTask(taskId: string, assignees: string[]): TaskSnapshotV1 {
@@ -381,16 +488,26 @@ export class BpairEngine {
     const project = this.mustProject(projectId);
     const flow = this.mustFlow(project.flowKey, project.flowRevision);
     const tasks = this.options.repository.listTasks({ projectId });
+    const taskInstances = this.options.repository.listTaskInstances({ projectId });
     const pending = tasks.filter((task) => task.status === "pending");
     return {
       projectId,
       status: project.status,
       currentStepIds: project.currentStepIds,
+      taskSummary: project.taskSummary,
       pendingTasks: pending.map((task) => ({
         id: task.id,
         stepId: task.stepId,
         stepName: task.stepName,
         assignees: task.assignees
+      })),
+      taskInstances: taskInstances.map((task) => ({
+        id: task.id,
+        title: task.title,
+        phase: task.phase,
+        status: task.status,
+        assignees: task.assignees,
+        critical: Boolean(task.fields.isCritical)
       })),
       currentSteps: project.currentStepIds.map((stepId) => this.getStep(flow.definition, stepId)),
       recentEvents: this.options.repository.listEvents({ projectId, limit: 10 })
@@ -399,6 +516,40 @@ export class BpairEngine {
 
   auditTail(limit = 20, projectId?: string): EventRecord[] {
     return this.options.repository.listEvents({ projectId, limit });
+  }
+
+  private createTaskInstanceRecord(project: ProjectSnapshotV1, input: {
+    templateKey?: string | null;
+    flowKey?: string | null;
+    title: string;
+    description?: string | null;
+    phase?: string | null;
+    milestoneKey?: string | null;
+    priority?: string | null;
+    assignees?: string[];
+    fields?: Record<string, unknown>;
+  }): TaskInstanceSnapshotV1 {
+    const now = nowIso();
+    const task: TaskInstanceSnapshotV1 = {
+      id: makeId("ti"),
+      projectId: project.id,
+      templateKey: input.templateKey ?? null,
+      flowKey: input.flowKey ?? null,
+      title: input.title,
+      description: input.description ?? null,
+      phase: input.phase ?? null,
+      milestoneKey: input.milestoneKey ?? null,
+      priority: input.priority ?? null,
+      assignees: input.assignees?.length ? input.assignees : ["system"],
+      status: "pending",
+      fields: { ...(input.fields ?? {}) },
+      actionLog: [],
+      createdAt: now,
+      updatedAt: now,
+      completedAt: null
+    };
+    this.options.repository.saveTaskInstance(task);
+    return task;
   }
 
   private parseTaskSubmission(step: FlowStep, submission: unknown): FormSubmission | null {
@@ -468,7 +619,9 @@ export class BpairEngine {
     }
 
     if (step.type === "gateway") {
-      const next = flow.definition.transitions.find((transition) => transition.from === step.id && evaluateCondition(transition.condition, project.data.fields));
+      const next = flow.definition.transitions.find((transition) =>
+        transition.from === step.id && evaluateCondition(transition.condition, this.buildConditionContext(project.id, project.data.fields))
+      );
       if (!next) {
         throw new BpairError("GATEWAY_NO_MATCH", `Gateway ${step.id} has no matching transition`);
       }
@@ -521,12 +674,72 @@ export class BpairEngine {
     };
     this.options.repository.saveTask(task);
     this.emit("task.started", project.id, task.id, { stepId: step.id });
-    return this.saveProjectState({
+    const nextProject = this.saveProjectState({
       ...project,
       status: "processing",
       currentStepIds: [step.id],
       currentTaskIds: [task.id]
     });
+    this.seedTaskInstancesForStep(nextProject, step);
+    return this.mustProject(project.id);
+  }
+
+  private seedTaskInstancesForStep(project: ProjectSnapshotV1, step: FlowStep): void {
+    if (!step.taskOrchestration) {
+      return;
+    }
+    for (const template of step.taskOrchestration.createOnEnter) {
+      const assignees = template.assigneeRule
+        ? this.resolveAssignees({ ...step, assigneeRule: template.assigneeRule }, project.data.fields)
+        : ["system"];
+      this.createTaskInstanceRecord(project, {
+        templateKey: template.key ?? null,
+        title: template.title,
+        description: template.description ?? null,
+        phase: template.phase ?? step.id,
+        milestoneKey: template.milestoneKey ?? null,
+        priority: template.priority ?? null,
+        assignees,
+        fields: {
+          ...template.fields,
+          isCritical: template.critical
+        }
+      });
+    }
+
+    for (const seed of step.taskOrchestration.seedFromFields) {
+      const source = project.data.fields[seed.field];
+      if (!Array.isArray(source)) {
+        continue;
+      }
+      for (const item of source) {
+        if (!item || typeof item !== "object" || Array.isArray(item)) {
+          continue;
+        }
+        const row = item as Record<string, unknown>;
+        const title = row[seed.titleField];
+        if (typeof title !== "string" || !title.trim()) {
+          continue;
+        }
+        const assigneeValue = seed.assigneeField ? row[seed.assigneeField] : undefined;
+        const assignees = this.normalizeAssignees(assigneeValue, seed.defaultAssignees);
+        this.createTaskInstanceRecord(project, {
+          title,
+          description: seed.descriptionField ? this.asNullableString(row[seed.descriptionField]) : null,
+          phase: seed.phaseField ? this.asNullableString(row[seed.phaseField]) : step.id,
+          milestoneKey: seed.milestoneField ? this.asNullableString(row[seed.milestoneField]) : null,
+          priority: seed.priorityField ? this.asNullableString(row[seed.priorityField]) : null,
+          assignees,
+          fields: {
+            ...seed.defaultFields,
+            ...row,
+            isCritical: seed.criticalField ? Boolean(row[seed.criticalField]) : Boolean(seed.defaultFields.isCritical)
+          }
+        });
+      }
+    }
+
+    this.refreshProjectTaskSummary(project.id);
   }
 
   private resumeParentIfNeeded(project: ProjectSnapshotV1): void {
@@ -539,14 +752,14 @@ export class BpairEngine {
     if (!currentSubflowStepId) {
       return;
     }
-    const transition = this.pickTransition(flow.definition, currentSubflowStepId, "complete", parent.data.fields);
+    const transition = this.pickTransition(flow.definition, currentSubflowStepId, "complete", parent.data.fields, parent.id);
     if (!transition) {
       return;
     }
     this.advanceProjectToStep(parent.id, transition.to);
   }
 
-  private resolveAssignees(step: FlowStep, fields: Record<string, unknown>): string[] {
+  private resolveAssignees(step: Pick<FlowStep, "assigneeRule">, fields: Record<string, unknown>): string[] {
     const rule = step.assigneeRule;
     if (!rule) {
       return ["system"];
@@ -566,8 +779,69 @@ export class BpairEngine {
     return rule.value;
   }
 
-  private pickTransition(flow: FlowSchemaV1, stepId: string, action: ActionType, fields: Record<string, unknown>) {
-    return flow.transitions.find((transition) => transition.from === stepId && transition.action === action && evaluateCondition(transition.condition, fields));
+  private pickTransition(flow: FlowSchemaV1, stepId: string, action: ActionType, fields: Record<string, unknown>, projectId?: string) {
+    const context = this.buildConditionContext(projectId, fields);
+    return flow.transitions.find((transition) =>
+      transition.from === stepId && transition.action === action && evaluateCondition(transition.condition, context)
+    );
+  }
+
+  private buildConditionContext(projectId: string | undefined, fields: Record<string, unknown>) {
+    return {
+      fields,
+      taskInstances: projectId ? this.options.repository.listTaskInstances({ projectId }) : []
+    };
+  }
+
+  private resolveTaskInstanceNextStatus(current: TaskInstanceSnapshotV1["status"], action: TaskInstanceAction): TaskInstanceSnapshotV1["status"] {
+    if (["completed", "cancelled"].includes(current)) {
+      throw new BpairError("TASK_INSTANCE_CLOSED", `Task instance is already ${current}`);
+    }
+    if (action === "cancel") {
+      return "cancelled";
+    }
+    if (action === "block") {
+      return "blocked";
+    }
+    if (action === "unblock") {
+      if (current !== "blocked") {
+        throw new BpairError("TASK_INSTANCE_NOT_BLOCKED", "Only blocked task instances can be unblocked");
+      }
+      return "in_progress";
+    }
+    if (action === "submit_review") {
+      if (!["in_progress", "pending"].includes(current)) {
+        throw new BpairError("TASK_INSTANCE_INVALID_ACTION", `Cannot submit review from ${current}`);
+      }
+      return "waiting_review";
+    }
+    if (action === "approve" || action === "complete") {
+      return "completed";
+    }
+    if (action === "reject") {
+      if (current !== "waiting_review") {
+        throw new BpairError("TASK_INSTANCE_INVALID_ACTION", "Only waiting_review task instances can be rejected");
+      }
+      return "in_progress";
+    }
+    return "in_progress";
+  }
+
+  private normalizeAssignees(value: unknown, fallback: string[]): string[] {
+    if (typeof value === "string" && value.trim()) {
+      return [value];
+    }
+    if (Array.isArray(value)) {
+      const assignees = value.filter((item): item is string => typeof item === "string" && Boolean(item.trim()));
+      if (assignees.length > 0) {
+        return assignees;
+      }
+    }
+    return fallback.length > 0 ? fallback : ["system"];
+  }
+
+  private asNullableString(value: unknown): string | null {
+    return typeof value === "string" && value.trim() ? value : null;
   }
 
   private getEntryStep(flow: FlowSchemaV1): FlowStep {
@@ -622,6 +896,24 @@ export class BpairEngine {
       throw new BpairError("TASK_NOT_FOUND", `Task ${taskId} not found`);
     }
     return record;
+  }
+
+  private mustTaskInstance(taskInstanceId: string): TaskInstanceSnapshotV1 {
+    const record = this.options.repository.getTaskInstance(taskInstanceId);
+    if (!record) {
+      throw new BpairError("TASK_INSTANCE_NOT_FOUND", `Task instance ${taskInstanceId} not found`);
+    }
+    return record;
+  }
+
+  private refreshProjectTaskSummary(projectId: string): ProjectSnapshotV1 {
+    const project = this.mustProject(projectId);
+    const taskInstances = this.options.repository.listTaskInstances({ projectId });
+    return this.saveProjectState({
+      ...project,
+      taskInstanceIds: taskInstances.map((task) => task.id),
+      taskSummary: summarizeTaskInstances(taskInstances)
+    });
   }
 
   private saveProjectState(project: ProjectSnapshotV1): ProjectSnapshotV1 {

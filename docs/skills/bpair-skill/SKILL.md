@@ -39,6 +39,7 @@ Use this skill whenever the user asks to:
 - create or modify a form template
 - launch a project instance
 - fill, save, or submit a task form
+- create, list, or advance project-level task instances
 - inspect project details or current workflow state
 - explain why a workflow is blocked
 - list audit history or recent task activity
@@ -58,6 +59,7 @@ return only actual engine data:
 - stored form templates
 - project instances
 - task records
+- task-instance records
 
 Do not answer with skill capabilities, action recipes, or usage flows such as:
 
@@ -92,9 +94,14 @@ npx -y @bpair/cli form list --json
    - use `bpair form get`
    - use `bpair project get`
    - use `bpair task get`
+   - use `bpair task-instance get` when working on project-scoped execution tasks
 8. After any write action, return both:
    - the raw JSON result
    - a short user-facing explanation
+9. Distinguish runtime layers:
+   - `task` is the current flow-step work item
+   - `task-instance` is a project-scoped parallel task object
+10. For software project management, prefer `task-instance` for daily execution work and reserve `task submit` for phase-gate or step-gate actions.
 
 ## Blueprint generator
 
@@ -223,6 +230,41 @@ npx -y @bpair/cli task submit --task <task-id> --action <action> --data /abs/pat
 npx -y @bpair/cli project get --id <project-id> --json
 ```
 
+### Create task instance
+
+1. Confirm the project id and task payload.
+2. Write one task-instance payload JSON file.
+3. Run:
+
+```bash
+npx -y @bpair/cli task-instance create --project <project-id> --input /abs/path/task-instance.json --json
+```
+
+### Batch create task instances
+
+1. Write one JSON array payload file.
+2. Run:
+
+```bash
+npx -y @bpair/cli task-instance batch-create --project <project-id> --input /abs/path/task-instances.json --json
+```
+
+### Submit task-instance action
+
+1. Confirm the target task-instance id and action.
+2. Write a payload file when fields should be updated.
+3. Run:
+
+```bash
+npx -y @bpair/cli task-instance submit --id <task-instance-id> --action <action> --data /abs/path/payload.json --json
+```
+
+4. Immediately fetch the updated project runtime state:
+
+```bash
+npx -y @bpair/cli runtime explain --project <project-id> --json
+```
+
 ### Explain blockers
 
 Run:
@@ -236,8 +278,9 @@ Then explain:
 
 - current step
 - pending task owners
+- task-instance summary and critical/blocking items
 - last transition or last missing action
-- whether the project is waiting on a subflow, approval, or data completion
+- whether the project is waiting on a subflow, approval, task-instance completion, or data completion
 
 ## Output format
 

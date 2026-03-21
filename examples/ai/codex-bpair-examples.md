@@ -44,3 +44,18 @@ Expected skill behavior:
 - call `bpair runtime explain`
 - optionally call `bpair audit tail`
 - return raw JSON plus a short explanation
+
+## Example 4
+
+User prompt:
+
+```text
+给项目 p_17a9ad44b175 批量创建执行任务，并把关键任务推进到完成后再告诉我是否可以进入下一阶段。
+```
+
+Expected skill behavior:
+
+- call `bpair task-instance batch-create --project ... --input ... --json`
+- call `bpair task-instance submit --id ... --action ... --json` as needed
+- call `bpair runtime explain`
+- explain current phase-gate status and remaining blockers

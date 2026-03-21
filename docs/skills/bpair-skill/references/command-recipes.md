@@ -37,9 +37,23 @@ npx -y @bpair/cli task draft-save --task t_xxx --data ./examples/submissions/kic
 npx -y @bpair/cli task submit --task t_xxx --action approve --data ./examples/submissions/kickoff-approve.json --json
 ```
 
+## Create parallel task instances inside a project
+
+```bash
+npx -y @bpair/cli task-instance create --project p_xxx --input ./task-instance.json --json
+npx -y @bpair/cli task-instance batch-create --project p_xxx --input ./task-instances.json --json
+```
+
+## Advance a task instance
+
+```bash
+npx -y @bpair/cli task-instance submit --id ti_xxx --action complete --data ./task-instance-submit.json --json
+```
+
 ## Inspect runtime state
 
 ```bash
+npx -y @bpair/cli task-instance list --project p_xxx --json
 npx -y @bpair/cli runtime explain --project p_xxx --json
 npx -y @bpair/cli audit tail --project p_xxx --json
 ```

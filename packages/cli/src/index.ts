@@ -195,6 +195,81 @@ task.command("reassign")
   .option("--json", "JSON output", true)
   .action(withEngine((engine, options) => engine.reassignTask(String(options.task), String(options.assignees).split(",").map((value) => value.trim()).filter(Boolean))));
 
+const taskInstance = program.command("task-instance");
+taskInstance.command("create")
+  .requiredOption("--project <id>")
+  .requiredOption("--input <path>")
+  .option("--json", "JSON output", true)
+  .action(withEngine(async (engine, options) => {
+    const parsed = await parseInputFile(String(options.input)) as Record<string, unknown>;
+    return engine.createTaskInstance({
+      projectId: String(options.project),
+      templateKey: typeof parsed.templateKey === "string" ? parsed.templateKey : null,
+      flowKey: typeof parsed.flowKey === "string" ? parsed.flowKey : null,
+      title: String(parsed.title),
+      description: typeof parsed.description === "string" ? parsed.description : null,
+      phase: typeof parsed.phase === "string" ? parsed.phase : null,
+      milestoneKey: typeof parsed.milestoneKey === "string" ? parsed.milestoneKey : null,
+      priority: typeof parsed.priority === "string" ? parsed.priority : null,
+      assignees: Array.isArray(parsed.assignees) ? parsed.assignees.filter((item): item is string => typeof item === "string") : undefined,
+      fields: parsed.fields && typeof parsed.fields === "object" && !Array.isArray(parsed.fields) ? parsed.fields as Record<string, unknown> : undefined
+    });
+  }));
+
+taskInstance.command("batch-create")
+  .requiredOption("--project <id>")
+  .requiredOption("--input <path>")
+  .option("--json", "JSON output", true)
+  .action(withEngine(async (engine, options) => {
+    const parsed = await parseInputFile(String(options.input)) as Array<Record<string, unknown>>;
+    return engine.batchCreateTaskInstances({
+      projectId: String(options.project),
+      items: parsed.map((item) => ({
+        templateKey: typeof item.templateKey === "string" ? item.templateKey : null,
+        flowKey: typeof item.flowKey === "string" ? item.flowKey : null,
+        title: String(item.title),
+        description: typeof item.description === "string" ? item.description : null,
+        phase: typeof item.phase === "string" ? item.phase : null,
+        milestoneKey: typeof item.milestoneKey === "string" ? item.milestoneKey : null,
+        priority: typeof item.priority === "string" ? item.priority : null,
+        assignees: Array.isArray(item.assignees) ? item.assignees.filter((value): value is string => typeof value === "string") : undefined,
+        fields: item.fields && typeof item.fields === "object" && !Array.isArray(item.fields) ? item.fields as Record<string, unknown> : undefined
+      }))
+    });
+  }));
+
+taskInstance.command("list")
+  .option("--project <id>")
+  .option("--json", "JSON output", true)
+  .action(withEngine((engine, options) => engine.listTaskInstances(options.project ? String(options.project) : undefined)));
+
+taskInstance.command("get")
+  .requiredOption("--id <id>")
+  .option("--json", "JSON output", true)
+  .action(withEngine((engine, options) => engine.getTaskInstance(String(options.id))));
+
+taskInstance.command("submit")
+  .requiredOption("--id <id>")
+  .requiredOption("--action <action>")
+  .option("--actor <actor>", "Actor id", "system")
+  .option("--data <path>")
+  .option("--json", "JSON output", true)
+  .action(withEngine(async (engine, options) => {
+    const parsed = options.data ? await parseInputFile(String(options.data)) : undefined;
+    const parsedRecord = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : undefined;
+    const nestedData = parsedRecord?.data;
+    return engine.submitTaskInstance({
+      id: String(options.id),
+      action: String(options.action) as "start" | "progress" | "submit_review" | "approve" | "reject" | "complete" | "block" | "unblock" | "cancel",
+      actorId: String(options.actor),
+      data: nestedData && typeof nestedData === "object" && !Array.isArray(nestedData)
+        ? nestedData as Record<string, unknown>
+        : parsedRecord
+    });
+  }));
+
 const runtime = program.command("runtime");
 runtime.command("explain")
   .requiredOption("--project <id>")

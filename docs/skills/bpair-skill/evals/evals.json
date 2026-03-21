@@ -18,6 +18,12 @@
       "prompt": "项目 p_123 为什么卡住了？请读取运行时和审计信息，告诉我当前阻塞点和下一步动作。",
       "expected_output": "调用 npx -y @bpair/cli runtime explain 和 npx -y @bpair/cli audit tail，并产出简洁阻塞说明。",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "给项目 p_123 批量创建执行任务，并把关键任务完成后再告诉我能不能进入下一阶段。",
+      "expected_output": "根据输入生成 task-instance 批量创建载荷，调用 npx -y @bpair/cli task-instance batch-create、task-instance submit、runtime explain，并说明阶段门是否已满足。",
+      "files": []
     }
   ]
 }

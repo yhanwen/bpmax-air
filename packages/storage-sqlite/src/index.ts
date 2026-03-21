@@ -1,5 +1,16 @@
 import { DatabaseSync } from "node:sqlite";
-import { eventSchema, projectSnapshotV1Schema, taskSnapshotV1Schema, type EventRecord, type FlowSchemaV1, type FormSchemaV1, type ProjectSnapshotV1, type TaskSnapshotV1 } from "@bpair/shared";
+import {
+  eventSchema,
+  projectSnapshotV1Schema,
+  taskInstanceSnapshotV1Schema,
+  taskSnapshotV1Schema,
+  type EventRecord,
+  type FlowSchemaV1,
+  type FormSchemaV1,
+  type ProjectSnapshotV1,
+  type TaskInstanceSnapshotV1,
+  type TaskSnapshotV1
+} from "@bpair/shared";
 import { type ArtifactRecord, type Repository, type TemplateRecord } from "@bpair/core";
 
 type JsonRow<T> = {
@@ -99,13 +110,15 @@ export class SqliteBpairRepository implements Repository {
 
   saveProject(project: ProjectSnapshotV1): ProjectSnapshotV1 {
     this.db.prepare(`
-      INSERT INTO projects (id, name, flow_key, flow_revision, status, current_step_ids, current_task_ids, parent_project_id, data, created_at, updated_at)
-      VALUES (@id, @name, @flowKey, @flowRevision, @status, @currentStepIds, @currentTaskIds, @parentProjectId, @data, @createdAt, @updatedAt)
+      INSERT INTO projects (id, name, flow_key, flow_revision, status, current_step_ids, current_task_ids, task_instance_ids, task_summary, parent_project_id, data, created_at, updated_at)
+      VALUES (@id, @name, @flowKey, @flowRevision, @status, @currentStepIds, @currentTaskIds, @taskInstanceIds, @taskSummary, @parentProjectId, @data, @createdAt, @updatedAt)
       ON CONFLICT(id) DO UPDATE SET
         name = excluded.name,
         status = excluded.status,
         current_step_ids = excluded.current_step_ids,
         current_task_ids = excluded.current_task_ids,
+        task_instance_ids = excluded.task_instance_ids,
+        task_summary = excluded.task_summary,
         parent_project_id = excluded.parent_project_id,
         data = excluded.data,
         updated_at = excluded.updated_at
@@ -115,6 +128,8 @@ export class SqliteBpairRepository implements Repository {
       flowRevision: project.flowRevision,
       currentStepIds: JSON.stringify(project.currentStepIds),
       currentTaskIds: JSON.stringify(project.currentTaskIds),
+      taskInstanceIds: JSON.stringify(project.taskInstanceIds),
+      taskSummary: JSON.stringify(project.taskSummary),
       parentProjectId: project.parentProjectId,
       data: JSON.stringify(project.data)
     });
@@ -134,6 +149,8 @@ export class SqliteBpairRepository implements Repository {
       status: row.status,
       currentStepIds: JSON.parse(String(row.current_step_ids)),
       currentTaskIds: JSON.parse(String(row.current_task_ids)),
+      taskInstanceIds: JSON.parse(String(row.task_instance_ids ?? "[]")),
+      taskSummary: JSON.parse(String(row.task_summary ?? "{}")),
       parentProjectId: row.parent_project_id ?? null,
       data: JSON.parse(String(row.data)),
       createdAt: row.created_at,
@@ -201,6 +218,75 @@ export class SqliteBpairRepository implements Repository {
     const sql = `SELECT id FROM tasks${clauses.length ? ` WHERE ${clauses.join(" AND ")}` : ""} ORDER BY updated_at DESC`;
     const rows = this.db.prepare(sql).all(...values) as Array<{ id: string }>;
     return rows.map((row) => this.getTask(row.id)).filter(Boolean) as TaskSnapshotV1[];
+  }
+
+  saveTaskInstance(taskInstance: TaskInstanceSnapshotV1): TaskInstanceSnapshotV1 {
+    this.db.prepare(`
+      INSERT INTO task_instances (id, project_id, template_key, flow_key, title, description, phase, milestone_key, priority, assignees, status, fields, action_log, created_at, updated_at, completed_at)
+      VALUES (@id, @projectId, @templateKey, @flowKey, @title, @description, @phase, @milestoneKey, @priority, @assignees, @status, @fields, @actionLog, @createdAt, @updatedAt, @completedAt)
+      ON CONFLICT(id) DO UPDATE SET
+        template_key = excluded.template_key,
+        flow_key = excluded.flow_key,
+        title = excluded.title,
+        description = excluded.description,
+        phase = excluded.phase,
+        milestone_key = excluded.milestone_key,
+        priority = excluded.priority,
+        assignees = excluded.assignees,
+        status = excluded.status,
+        fields = excluded.fields,
+        action_log = excluded.action_log,
+        updated_at = excluded.updated_at,
+        completed_at = excluded.completed_at
+    `).run({
+      ...taskInstance,
+      assignees: JSON.stringify(taskInstance.assignees),
+      fields: JSON.stringify(taskInstance.fields),
+      actionLog: JSON.stringify(taskInstance.actionLog),
+      completedAt: taskInstance.completedAt
+    });
+    return taskInstance;
+  }
+
+  getTaskInstance(taskInstanceId: string): TaskInstanceSnapshotV1 | null {
+    const row = this.db.prepare(`SELECT * FROM task_instances WHERE id = ?`).get(taskInstanceId) as Record<string, unknown> | undefined;
+    if (!row) {
+      return null;
+    }
+    return taskInstanceSnapshotV1Schema.parse({
+      id: row.id,
+      projectId: row.project_id,
+      templateKey: row.template_key ?? null,
+      flowKey: row.flow_key ?? null,
+      title: row.title,
+      description: row.description ?? null,
+      phase: row.phase ?? null,
+      milestoneKey: row.milestone_key ?? null,
+      priority: row.priority ?? null,
+      assignees: JSON.parse(String(row.assignees)),
+      status: row.status,
+      fields: JSON.parse(String(row.fields)),
+      actionLog: JSON.parse(String(row.action_log)),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      completedAt: row.completed_at ?? null
+    });
+  }
+
+  listTaskInstances(filter?: { projectId?: string; status?: string }): TaskInstanceSnapshotV1[] {
+    const clauses: string[] = [];
+    const values: Array<string> = [];
+    if (filter?.projectId) {
+      clauses.push("project_id = ?");
+      values.push(filter.projectId);
+    }
+    if (filter?.status) {
+      clauses.push("status = ?");
+      values.push(filter.status);
+    }
+    const sql = `SELECT id FROM task_instances${clauses.length ? ` WHERE ${clauses.join(" AND ")}` : ""} ORDER BY updated_at DESC`;
+    const rows = this.db.prepare(sql).all(...values) as Array<{ id: string }>;
+    return rows.map((row) => this.getTaskInstance(row.id)).filter(Boolean) as TaskInstanceSnapshotV1[];
   }
 
   appendEvent(event: EventRecord): EventRecord {
@@ -292,6 +378,8 @@ export class SqliteBpairRepository implements Repository {
         status TEXT NOT NULL,
         current_step_ids TEXT NOT NULL,
         current_task_ids TEXT NOT NULL,
+        task_instance_ids TEXT NOT NULL DEFAULT '[]',
+        task_summary TEXT NOT NULL DEFAULT '{}',
         parent_project_id TEXT,
         data TEXT NOT NULL,
         created_at TEXT NOT NULL,
@@ -306,6 +394,25 @@ export class SqliteBpairRepository implements Repository {
         status TEXT NOT NULL,
         assignees TEXT NOT NULL,
         draft_submission TEXT NOT NULL,
+        action_log TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        completed_at TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS task_instances (
+        id TEXT PRIMARY KEY,
+        project_id TEXT NOT NULL,
+        template_key TEXT,
+        flow_key TEXT,
+        title TEXT NOT NULL,
+        description TEXT,
+        phase TEXT,
+        milestone_key TEXT,
+        priority TEXT,
+        assignees TEXT NOT NULL,
+        status TEXT NOT NULL,
+        fields TEXT NOT NULL,
         action_log TEXT NOT NULL,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
@@ -330,6 +437,16 @@ export class SqliteBpairRepository implements Repository {
         created_at TEXT NOT NULL
       );
     `);
+    this.ensureColumn("projects", "task_instance_ids", "TEXT NOT NULL DEFAULT '[]'");
+    this.ensureColumn("projects", "task_summary", "TEXT NOT NULL DEFAULT '{}'");
+  }
+
+  private ensureColumn(table: string, column: string, definition: string): void {
+    const columns = this.db.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>;
+    if (columns.some((item) => item.name === column)) {
+      return;
+    }
+    this.db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
   }
 
   private parseTemplateRow<T>(row: unknown): TemplateRecord<T> | null {

@@ -23,6 +23,7 @@ It is designed around a small set of stable JSON contracts so the same workflow 
 - AI-friendly flow DSL in JSON/YAML
 - JSON-based form template model with revisioning
 - Headless runtime with project, task, audit, and event concepts
+- Project-level parallel `task-instance` model for software delivery and stage-gate workflows
 - SQLite-first persistence with room for future Postgres support
 - Stable JSON CLI output for agents and scripts
 - HTTP API and TypeScript SDK on top of the same core engine
@@ -112,6 +113,7 @@ pnpm gen:blueprint --input ./examples/ai/project-delivery.blueprint.yaml --out-d
 - `FlowTemplate`: steps, transitions, policies, triggers, revision
 - `Project`: runtime instance of a flow
 - `Task`: step-specific work item with draft and submit lifecycle
+- `TaskInstance`: project-scoped parallel task object with its own status, assignees, and audit trail
 - `Event`: runtime event trail
 - `Artifact`: external references such as subflow links
 
@@ -122,10 +124,23 @@ npx -y @bpair/cli form create --input ./form.json --json
 npx -y @bpair/cli flow create --input ./flow.json --json
 npx -y @bpair/cli project create --flow project-delivery --name "Project A" --data ./create.json --json
 npx -y @bpair/cli task submit --task t_123 --action approve --data ./submit.json --json
+npx -y @bpair/cli task-instance list --project p_123 --json
+npx -y @bpair/cli task-instance submit --id ti_123 --action complete --data ./task-instance-submit.json --json
 npx -y @bpair/cli runtime explain --project p_123 --json
 ```
 
 See [docs/cli.md](./docs/cli.md) for more.
+
+## Parallel Task Model
+
+BPMax-Air now supports a two-layer runtime model:
+
+- main flow steps still control phase entry, review, and release
+- project-level `task-instance` records carry day-to-day execution work in parallel
+- flow step `taskOrchestration` can create task templates on step entry or seed tasks from table fields
+- transition conditions can read task-instance aggregate state such as `all_critical_completed` or `any_blocked`
+
+This is intended for project-delivery style workflows where one project must hold many concurrent tasks without forcing every task into a subflow.
 
 ## Skill Integration
 

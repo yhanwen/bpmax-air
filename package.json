@@ -1,6 +1,6 @@
 {
   "name": "bpmax-air",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "AI-first headless BPM engine with flow/form JSON DSL, CLI, HTTP API, and general-purpose agent skill integration.",
   "license": "MIT",

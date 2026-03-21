@@ -1,6 +1,6 @@
 {
   "name": "@bpair/storage-postgres",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Future Postgres repository package for BPMax-Air.",
   "license": "MIT",
   "type": "module",
